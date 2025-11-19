@@ -1,6 +1,6 @@
 {
   "name": "pranavportfolio",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "dev": "vite --port 4000",
     "build": "vite build",
