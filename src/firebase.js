@@ -25,68 +25,88 @@ const fallbackConfig = {
 const hasAllEnvVars = Object.values(envConfig).every(v => v);
 const firebaseConfig = hasAllEnvVars ? envConfig : fallbackConfig;
 
-if (!hasAllEnvVars) {
-  console.warn('[firebase] Using fallback config (env vars not set). To use env vars, set them in Vercel dashboard or .env file.');
-}
-
-// Helper to check for missing env vars and provide clearer diagnostics
-export function checkFirebaseConfig() {
-  const missing = Object.entries(firebaseConfig).filter(([, v]) => !v).map(([k]) => k);
-  if (missing.length) {
-    console.error('[firebase] Missing Firebase env vars:', missing.join(', '));
-    return { ok: false, missing };
-  }
-  return { ok: true };
-}
-
 let app;
+let auth;
+let initError = null;
+
+console.log('[firebase] Initializing with config:', {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+});
+
 try {
   app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  console.log('[firebase] ✅ Firebase initialized successfully');
 } catch (err) {
-  // initialization error (likely invalid config)
-  console.error('[firebase] initializeApp error:', err && err.message ? err.message : err);
+  initError = err;
+  console.error('[firebase] ❌ Failed to initialize Firebase:', err.message);
 }
-
-export const auth = app ? getAuth(app) : null;
 
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 
+// Configure providers
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export { auth };
+
 export async function signInWithGoogle() {
   if (!auth) {
-    const msg = 'Firebase Auth not initialized. Check environment variables and initialization.';
-    console.error('[firebase] ' + msg);
-    alert(msg);
+    const msg = `Firebase Auth not initialized. Error: ${initError?.message || 'Unknown'}`;
+    console.error('[firebase]', msg);
+    alert('❌ Authentication unavailable: ' + msg);
     return;
   }
   try {
-    await signInWithPopup(auth, googleProvider);
+    console.log('[firebase] Attempting Google sign-in...');
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log('[firebase] ✅ Google sign-in successful:', result.user.email);
   } catch (e) {
-    console.error('Google sign-in error', e);
-    alert('Google sign-in failed: ' + (e && e.message ? e.message : e));
+    console.error('[firebase] Google sign-in error:', e.code, e.message);
+    // Common Firebase errors
+    const errorMap = {
+      'auth/operation-not-supported-in-this-environment': 'Popups are blocked or not supported. Enable popups in browser settings.',
+      'auth/popup-closed-by-user': 'Sign-in popup was closed.',
+      'auth/unauthorized-domain': `⚠️ Your domain is not authorized in Firebase. Contact admin. (Domain: ${window.location.hostname})`,
+      'auth/configuration-not-found': 'Firebase configuration not found. Please ensure Firebase is properly configured.',
+    };
+    const userMsg = errorMap[e.code] || e.message;
+    alert('Google sign-in failed: ' + userMsg);
   }
 }
 
 export async function signInWithGitHub() {
   if (!auth) {
-    const msg = 'Firebase Auth not initialized. Check environment variables and initialization.';
-    console.error('[firebase] ' + msg);
-    alert(msg);
+    const msg = `Firebase Auth not initialized. Error: ${initError?.message || 'Unknown'}`;
+    console.error('[firebase]', msg);
+    alert('❌ Authentication unavailable: ' + msg);
     return;
   }
   try {
-    await signInWithPopup(auth, githubProvider);
+    console.log('[firebase] Attempting GitHub sign-in...');
+    const result = await signInWithPopup(auth, githubProvider);
+    console.log('[firebase] ✅ GitHub sign-in successful:', result.user.email);
   } catch (e) {
-    console.error('GitHub sign-in error', e);
-    alert('GitHub sign-in failed: ' + (e && e.message ? e.message : e));
+    console.error('[firebase] GitHub sign-in error:', e.code, e.message);
+    const errorMap = {
+      'auth/operation-not-supported-in-this-environment': 'Popups are blocked or not supported. Enable popups in browser settings.',
+      'auth/popup-closed-by-user': 'Sign-in popup was closed.',
+      'auth/unauthorized-domain': `⚠️ Your domain is not authorized in Firebase. Contact admin. (Domain: ${window.location.hostname})`,
+      'auth/configuration-not-found': 'Firebase configuration not found. Please ensure Firebase is properly configured.',
+    };
+    const userMsg = errorMap[e.code] || e.message;
+    alert('GitHub sign-in failed: ' + userMsg);
   }
 }
 
 export async function signOutUser() {
+  if (!auth) return;
   try {
     await signOut(auth);
+    console.log('[firebase] ✅ User signed out');
   } catch (e) {
-    console.error('Sign out error', e);
+    console.error('[firebase] Sign out error:', e.message);
   }
 }
 
