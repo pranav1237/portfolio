@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { auth, signInWithGoogle, signInWithGitHub, signOutUser, checkFirebaseConfig } from './firebase';
+import { auth, signInWithGoogle, signInWithGitHub, signOutUser } from './firebase';
 import './styles.css';
 
 // Animated background elements
@@ -123,19 +123,11 @@ function ContactForm() {
 }
 
 export default function Portfolio() {
-	const [firebaseOk, setFirebaseOk] = useState(true);
 	const [repos, setRepos] = useState([]);
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		// Validate Firebase config immediately
-		const cfg = checkFirebaseConfig();
-		if (!cfg.ok) {
-			setFirebaseOk(false);
-			console.error('[Portfolio] Firebase config missing:', cfg.missing);
-		}
-
 		const unsub = auth ? auth.onAuthStateChanged(u => setUser(u)) : () => {};
 
 		fetch('https://api.github.com/users/pranav1237/repos?sort=updated&per_page=12')
@@ -155,17 +147,10 @@ export default function Portfolio() {
 		{ title: 'CBSE Board', school: '12th Class (2024) | 10th Class (2022)', year: '', spec: '' }
 	];
 
-	return (
-		<div className="page">
-			<AnimatedBg />
-			{!firebaseOk && (
-				<div style={{background: '#ffefef', color: '#7b1d1d', padding: '10px 16px', textAlign: 'center'}}>
-					<strong>Firebase configuration issue:</strong> Authentication will not work until your Firebase env vars are set. Check console for details.
-				</div>
-			)}
-			<Header user={user} />
-
-			<main>
+		return (
+			<div className="page">
+				<AnimatedBg />
+				<Header user={user} />			<main>
 				{/* Hero Section */}
 				<motion.section className="hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
 					<div className="hero-content">

@@ -1,11 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
-// Firebase config is read from Vite env vars. Create these in a .env or in Vercel's dashboard:
-// VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID,
-// VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_APP_ID
-
-const firebaseConfig = {
+// Firebase config: Try env vars first, fall back to hardcoded values for Vercel deployment
+const envConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -13,6 +10,24 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+// Fallback hardcoded config (for Vercel deployment when env vars are not set)
+const fallbackConfig = {
+  apiKey: 'AIzaSyBl2QtWefSQgwIlbmg2uLJttg5ap3fw38w',
+  authDomain: 'pranavportfolio-1b517.firebaseapp.com',
+  projectId: 'pranavportfolio-1b517',
+  storageBucket: 'pranavportfolio-1b517.firebasestorage.app',
+  messagingSenderId: '203675250878',
+  appId: '1:203675250878:web:d822a4dbaa1afaca78eeef',
+};
+
+// Use env vars if all present, otherwise use fallback
+const hasAllEnvVars = Object.values(envConfig).every(v => v);
+const firebaseConfig = hasAllEnvVars ? envConfig : fallbackConfig;
+
+if (!hasAllEnvVars) {
+  console.warn('[firebase] Using fallback config (env vars not set). To use env vars, set them in Vercel dashboard or .env file.');
+}
 
 // Helper to check for missing env vars and provide clearer diagnostics
 export function checkFirebaseConfig() {
