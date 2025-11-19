@@ -14,27 +14,56 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Helper to check for missing env vars and provide clearer diagnostics
+export function checkFirebaseConfig() {
+  const missing = Object.entries(firebaseConfig).filter(([, v]) => !v).map(([k]) => k);
+  if (missing.length) {
+    console.error('[firebase] Missing Firebase env vars:', missing.join(', '));
+    return { ok: false, missing };
+  }
+  return { ok: true };
+}
+
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+} catch (err) {
+  // initialization error (likely invalid config)
+  console.error('[firebase] initializeApp error:', err && err.message ? err.message : err);
+}
+
+export const auth = app ? getAuth(app) : null;
 
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 
 export async function signInWithGoogle() {
+  if (!auth) {
+    const msg = 'Firebase Auth not initialized. Check environment variables and initialization.';
+    console.error('[firebase] ' + msg);
+    alert(msg);
+    return;
+  }
   try {
     await signInWithPopup(auth, googleProvider);
   } catch (e) {
     console.error('Google sign-in error', e);
-    alert('Google sign-in failed: ' + e.message);
+    alert('Google sign-in failed: ' + (e && e.message ? e.message : e));
   }
 }
 
 export async function signInWithGitHub() {
+  if (!auth) {
+    const msg = 'Firebase Auth not initialized. Check environment variables and initialization.';
+    console.error('[firebase] ' + msg);
+    alert(msg);
+    return;
+  }
   try {
     await signInWithPopup(auth, githubProvider);
   } catch (e) {
     console.error('GitHub sign-in error', e);
-    alert('GitHub sign-in failed: ' + e.message);
+    alert('GitHub sign-in failed: ' + (e && e.message ? e.message : e));
   }
 }
 
