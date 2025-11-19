@@ -76,6 +76,7 @@ Your Firebase project (`pranavportfolio-1b517`) is already configured with:
 ```powershell
 npm run build
 ```
+NOTE: Triggering redeploy to ensure Vercel builds latest commit (removes faulty Analytics import).
 
 Output is in the `dist/` folder, ready for deployment.
 
