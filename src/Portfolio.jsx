@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 import { auth, signInWithGoogle, signInWithGitHub, signOutUser } from './firebase';
 import './styles.css';
 
@@ -322,6 +323,7 @@ export default function Portfolio() {
 					</div>
 				</motion.div>
 			</footer>
+			<Analytics />
 		</div>
 	);
 }
