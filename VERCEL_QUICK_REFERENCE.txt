@@ -1,0 +1,68 @@
+📋 VERCEL DEPLOYMENT QUICK REFERENCE
+
+═══════════════════════════════════════════════════════════════
+
+🔗 VERCEL IMPORT LINK:
+https://vercel.com/new
+
+GITHUB REPO:
+https://github.com/pranav1237/portfolio
+
+═══════════════════════════════════════════════════════════════
+
+⚙️ BUILD SETTINGS (Auto-detected, verify these):
+  Build Command: npm run build
+  Output Directory: dist
+  Install Command: npm install
+
+═══════════════════════════════════════════════════════════════
+
+🔐 ENVIRONMENT VARIABLES (Copy-paste these exactly):
+
+VITE_FIREBASE_API_KEY
+AIzaSyBl2QtWefSQgwIlbmg2uLJttg5ap3fw38w
+
+VITE_FIREBASE_AUTH_DOMAIN
+pranavportfolio-1b517.firebaseapp.com
+
+VITE_FIREBASE_PROJECT_ID
+pranavportfolio-1b517
+
+VITE_FIREBASE_STORAGE_BUCKET
+pranavportfolio-1b517.firebasestorage.app
+
+VITE_FIREBASE_MESSAGING_SENDER_ID
+203675250878
+
+VITE_FIREBASE_APP_ID
+1:203675250878:web:d822a4dbaa1afaca78eeef
+
+═══════════════════════════════════════════════════════════════
+
+✅ POST-DEPLOYMENT CHECKLIST:
+
+[ ] Visit your Vercel URL
+[ ] Test "Sign in with Google"
+[ ] Test "Sign in with GitHub"
+[ ] Download resume works
+[ ] GitHub repos load
+[ ] Mobile responsive check
+
+═══════════════════════════════════════════════════════════════
+
+🔗 FIREBASE CONSOLE:
+https://console.firebase.google.com/
+Project: pranavportfolio-1b517
+
+After deployment, add your Vercel URL to:
+Firebase → Authentication → Authorized JavaScript origins
+
+═══════════════════════════════════════════════════════════════
+
+📱 GITHUB OAUTH APP (for reference):
+https://github.com/settings/developers
+
+Ensure callback URL is set to Firebase's value:
+https://pranavportfolio-1b517.firebaseapp.com/__/auth/handler
+
+═══════════════════════════════════════════════════════════════
