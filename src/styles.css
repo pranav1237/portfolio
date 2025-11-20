@@ -94,6 +94,17 @@ body {
 	border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
+/* Logo video */
+.logo-video {
+	width: 64px;
+	height: 64px;
+	object-fit: contain;
+	border-radius: 12px;
+	margin-right: 12px;
+	background: rgba(255,255,255,0.02);
+	border: 1px solid rgba(255,255,255,0.04);
+}
+
 .brand h1 {
 	margin: 0;
 	font-size: 22px;

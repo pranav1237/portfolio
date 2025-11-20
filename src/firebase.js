@@ -25,6 +25,10 @@ const fallbackConfig = {
 const hasAllEnvVars = Object.values(envConfig).every(v => v);
 const firebaseConfig = hasAllEnvVars ? envConfig : fallbackConfig;
 
+if (!hasAllEnvVars) {
+  console.warn('[firebase] ⚠️ Not all VITE_FIREBASE_* env vars were present; using fallback config.');
+}
+
 let app;
 let auth;
 let initError = null;
@@ -73,6 +77,14 @@ export async function signInWithGoogle() {
     };
     const userMsg = errorMap[e.code] || e.message;
     alert('Google sign-in failed: ' + userMsg);
+    if (e.code === 'auth/configuration-not-found') {
+      alert(
+        'Google sign-in failed: Firebase configuration for this provider is missing.\n\n' +
+        'Fix: In the Firebase Console -> Authentication -> Sign-in method, open Google and ensure the provider is configured. ' +
+        'Also confirm your deployment domain is present under Authorized domains.'
+      );
+      return;
+    }
   }
 }
 
@@ -97,6 +109,18 @@ export async function signInWithGitHub() {
     };
     const userMsg = errorMap[e.code] || e.message;
     alert('GitHub sign-in failed: ' + userMsg);
+    if (e.code === 'auth/configuration-not-found') {
+      alert(
+        'GitHub sign-in failed: Firebase/GitHub configuration is missing.\n\n' +
+        'Fix steps:\n' +
+        '1) In Firebase Console -> Authentication -> Sign-in method -> GitHub, add your GitHub OAuth Client ID and Client Secret (do NOT commit secrets to the repo).\n' +
+        '2) In your GitHub OAuth App settings, set the Authorization callback URL to:\n' +
+        `   https://${firebaseConfig.authDomain}/__/auth/handler\n` +
+        '3) Ensure your Vercel domain is listed under Firebase Authorized domains (and the firebaseapp.com domain is present).\n\n' +
+        'If you prefer, paste the GitHub Client ID (but never the secret) here so I can confirm expected values (I will not store it in the repository).'
+      );
+      return;
+    }
   }
 }
 

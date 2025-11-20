@@ -25,12 +25,14 @@ function Header({ user }) {
 
 	return (
 		<motion.header className={`site-header ${scrolled ? 'scrolled' : ''}`} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-			<div className="brand">
-				<motion.div whileHover={{ scale: 1.05 }}>
-					<h1>✨ Pranav Mahajan</h1>
-					<p>Full‑Stack Developer | AI/ML Specialist | Web Developer</p>
-				</motion.div>
-			</div>
+		<div className="brand">
+			{/* Animated/video logo: place `Portfolio.mp4` in `public/logo.mp4` so it is served at /logo.mp4 */}
+			<video className="logo-video" src="/logo.mp4" autoPlay muted loop playsInline poster="/logo-poster.png" />
+			<motion.div whileHover={{ scale: 1.05 }}>
+				<h1>✨ Pranav Mahajan</h1>
+				<p>Full‑Stack Developer | AI/ML Specialist | Web Developer</p>
+			</motion.div>
+		</div>
 			<div className="auth">
 				{user ? (
 					<motion.div className="user" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
