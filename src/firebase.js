@@ -106,6 +106,29 @@ export async function signInWithGitHub() {
     console.error('[firebase] GitHub sign-in error:', e.code, e.message);
     console.error('[firebase] Full error object:', e);
     
+    // Handle account-exists-with-different-credential error
+    if (e.code === 'auth/account-exists-with-different-credential') {
+      console.log('[firebase] Account exists with different provider. Attempting to link accounts...');
+      try {
+        // Get the pending credential from the error
+        const pendingCred = e.credential;
+        const email = e.email;
+        
+        // Sign in with the current user's provider (Google)
+        const result = await signInWithPopup(auth, googleProvider);
+        
+        // Link the GitHub credential to the existing account
+        await result.user.linkWithCredential(pendingCred);
+        console.log('[firebase] ✅ Successfully linked GitHub account to existing user');
+        alert('✅ GitHub account linked successfully! Welcome ' + result.user.displayName);
+        return;
+      } catch (linkError) {
+        console.error('[firebase] Failed to link accounts:', linkError.message);
+        alert('❌ Could not link GitHub account. Please try signing out first and then signing in with GitHub.');
+        return;
+      }
+    }
+    
     const errorMap = {
       'auth/operation-not-supported-in-this-environment': 'Popups are blocked or not supported. Enable popups in browser settings.',
       'auth/popup-closed-by-user': 'Sign-in popup was closed.',
