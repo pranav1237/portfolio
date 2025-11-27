@@ -51,18 +51,40 @@ function Header({ user }) {
 }
 
 function SignInView() {
-    return (
-        <div className="signin-page">
-            <div className="signin-card">
-                <h2>Sign in to view the portfolio</h2>
-                <p>Please sign in with Google to continue to the site.</p>
-                <div className="signin-actions">
-                    <button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
-                </div>
-            </div>
-        </div>
-    );
-}function RepoCard({ repo, index }) {
+	const domain = typeof window !== 'undefined' ? window.location.hostname : '';
+
+	async function copyDomain() {
+		try {
+			await navigator.clipboard.writeText(domain);
+			alert('Domain copied to clipboard: ' + domain);
+		} catch (err) {
+			console.warn('Clipboard write failed', err);
+			prompt('Copy this domain and paste it into Firebase Authorized domains:', domain);
+		}
+	}
+
+	function openFirebaseConsole() {
+		const url = `https://console.firebase.google.com/project/pranavportfolio-1b517/authentication/settings`;
+		window.open(url, '_blank');
+	}
+
+	return (
+		<div className="signin-page">
+			<div className="signin-card">
+				<h2>Sign in to view the portfolio</h2>
+				<p>Please sign in with Google to continue to the site.</p>
+				<div style={{marginBottom:12,color:'#9aa3bd'}}>Detected domain: <strong>{domain}</strong></div>
+				<div className="signin-actions">
+					<button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
+					<button className="btn" onClick={copyDomain}>Copy domain</button>
+					<button className="btn outline" onClick={openFirebaseConsole}>Open Firebase Console</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function RepoCard({ repo, index }) {
 	return (
 		<motion.a
 			href={repo.html_url}
