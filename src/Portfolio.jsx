@@ -51,21 +51,18 @@ function Header({ user }) {
 }
 
 function SignInView() {
-	return (
-		<div className="signin-page">
-			<div className="signin-card">
-				<h2>Sign in to view the portfolio</h2>
-				<p>Please sign in with Google to continue to the site.</p>
-				<div className="signin-actions">
-					<button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
-					<button className="btn" onClick={() => window.open('https://raw.githubusercontent.com/pranav1237/portfolio/main/FIREBASE_DOMAIN_FIX.md', '_blank')}>How to fix auth</button>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function RepoCard({ repo, index }) {
+    return (
+        <div className="signin-page">
+            <div className="signin-card">
+                <h2>Sign in to view the portfolio</h2>
+                <p>Please sign in with Google to continue to the site.</p>
+                <div className="signin-actions">
+                    <button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
+                </div>
+            </div>
+        </div>
+    );
+}function RepoCard({ repo, index }) {
 	return (
 		<motion.a
 			href={repo.html_url}
