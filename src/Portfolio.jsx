@@ -89,8 +89,10 @@ function SignInView() {
 				<div style={{marginBottom:12,color:'#9aa3bd'}}>Detected domain: <strong>{domain}</strong></div>
 				<div className="signin-actions">
 					<button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
-					<button className="btn" onClick={copyDomain}>Copy domain</button>
-					<button className="btn outline" onClick={openFirebaseConsole}>Open Firebase Console</button>
+				</div>
+				<div className="phone-auth-note" style={{marginTop:16,color:'#9aa3bd'}}>
+					<strong>Note:</strong> Phone authentication requires additional configuration in Firebase (reCAPTCHA, phone numbers, and verification). See the project docs: 
+					<a href="/FIREBASE_AUTH_SETUP.md" target="_blank" rel="noreferrer" style={{color:'#9ad0ff',marginLeft:6}}>Firebase Auth Setup</a>
 				</div>
 			</div>
 		</div>
