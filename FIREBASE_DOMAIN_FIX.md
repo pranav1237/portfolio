@@ -1,8 +1,12 @@
 # Firebase Domain Authorization Fix
 
-## Your Current Vercel Domain
+## Your Current Vercel Domain(s)
+Preview and production Vercel domains can change per deployment. When you see the "unauthorized-domain" alert, copy the domain shown in the alert and add that exact domain to Firebase Authorized domains.
+
+Common examples you may encounter (add whichever matches your alert):
 ```
 pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app
+pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app
 ```
 
 ## Error You're Seeing
@@ -20,15 +24,15 @@ Contact admin. (Domain: pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.ap
 
 ### Step 2: Add Your Vercel Domain
 - Click **Add domain** button
-- Enter: `pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app`
-- Click **Add**
+ - Enter the exact Vercel domain shown in your error alert (for example `pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app`) and click **Add**
 
 ### Step 3: Verify All Domains Are Present
 You should have these authorized domains:
 - ✅ `localhost`
 - ✅ `127.0.0.1`
 - ✅ `pranavportfolio-1b517.firebaseapp.com` (Firebase hosting domain - must be here)
-- ✅ `pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app` (Your Vercel domain - ADD THIS NOW)
+ - ✅ `pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app` (Your Vercel domain - ADD THIS NOW)
+ - ✅ `pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app` (Preview domain — add this if shown in your alert)
 - ✅ Any custom domains you use
 
 ### Step 4: Verify Sign-in Methods Are Enabled
@@ -56,7 +60,7 @@ You should have these authorized domains:
 ## After Making These Changes
 
 1. Wait 30-60 seconds for Firebase to propagate the domain
-2. Go to your live Vercel URL: `https://pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app`
+2. Go to your live Vercel URL (or the exact preview domain shown in the alert), for example: `https://pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app`
 3. Click **Google** or **GitHub** button
 4. Auth popup should appear (no more "unauthorized-domain" alert)
 5. If it works → celebrate! 🎉
@@ -82,7 +86,7 @@ You should have these authorized domains:
 
 ## Your Site URL (Save This)
 ```
-https://pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app
+https://pranavportfolio-<your-deployment-id>-pranav1237s-projects.vercel.app
 ```
 
 ## Your Firebase Project Details

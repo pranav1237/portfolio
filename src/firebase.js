@@ -75,6 +75,27 @@ export async function signInWithGoogle() {
     };
     const userMsg = errorMap[e.code] || e.message;
     alert('Google sign-in failed: ' + userMsg);
+    // If the domain isn't authorized, offer to open the in-repo instructions
+    if (e.code === 'auth/unauthorized-domain') {
+      try {
+        const host = window?.location?.hostname || 'this domain';
+        const rawDoc = 'https://raw.githubusercontent.com/pranav1237/portfolio/main/FIREBASE_DOMAIN_FIX.md';
+        const consoleUrl = `https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/providers`;
+        const openDocs = confirm(
+          `Google sign-in failed: Your domain (${host}) is not authorized in Firebase.\n\n` +
+          'Would you like to open instructions to add this domain to Firebase Authorized domains?'
+        );
+        if (openDocs) {
+          // Open the repo instructions and the Firebase Console Auth settings in new tabs
+          window.open(rawDoc, '_blank');
+          window.open(consoleUrl, '_blank');
+        }
+      } catch (uxErr) {
+        console.warn('[firebase] Could not open helper links:', uxErr);
+      }
+      return;
+    }
+
     if (e.code === 'auth/configuration-not-found') {
       alert(
         'Google sign-in failed: Firebase configuration for this provider is missing.\n\n' +

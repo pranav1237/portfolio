@@ -15,18 +15,13 @@ function AnimatedBg() {
 	);
 }
 
-function Header() {
+function Header({ user }) {
 	const [scrolled, setScrolled] = useState(false);
-    const [user, setUser] = useState(null);
 
 	useEffect(() => {
 		const handleScroll = () => setScrolled(window.scrollY > 50);
 		window.addEventListener('scroll', handleScroll);
-		const unsubAuth = onAuthStateChanged(auth, (u) => setUser(u));
-		return () => {
-			window.removeEventListener('scroll', handleScroll);
-			if (unsubAuth) unsubAuth();
-		};
+		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
 
 	return (
@@ -52,6 +47,21 @@ function Header() {
 			)}
 		</div>
 		</motion.header>
+	);
+}
+
+function SignInView() {
+	return (
+		<div className="signin-page">
+			<div className="signin-card">
+				<h2>Sign in to view the portfolio</h2>
+				<p>Please sign in with Google to continue to the site.</p>
+				<div className="signin-actions">
+					<button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
+					<button className="btn" onClick={() => window.open('https://raw.githubusercontent.com/pranav1237/portfolio/main/FIREBASE_DOMAIN_FIX.md', '_blank')}>How to fix auth</button>
+				</div>
+			</div>
+		</div>
 	);
 }
 
@@ -125,6 +135,7 @@ function ContactForm() {
 export default function Portfolio() {
 	const [repos, setRepos] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [user, setUser] = useState(undefined); // undefined = loading, null = not signed in
 
 	useEffect(() => {
 		fetch('https://api.github.com/users/pranav1237/repos?sort=updated&per_page=12')
@@ -136,16 +147,47 @@ export default function Portfolio() {
 			.finally(() => setLoading(false));
 	}, []);
 
+	useEffect(() => {
+		const unsub = onAuthStateChanged(auth, (u) => {
+			setUser(u);
+		});
+		return () => unsub && unsub();
+	}, []);
+
 	const skills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'Firebase', 'ML/AI', 'C++', 'Pandas', 'NumPy', 'Git'];
 	const education = [
 		{ title: 'B.Tech Software Engineering', school: 'Bennett University', year: '2024–ongoing', spec: 'AI & ML' },
 		{ title: 'CBSE Board', school: '12th Class (2024) | 10th Class (2022)', year: '', spec: '' }
 	];
 
+		// If auth state still loading, show nothing / loader
+		if (typeof user === 'undefined') {
+			return (
+				<div className="page">
+					<AnimatedBg />
+					<header />
+					<main>
+						<div className="loading-center">Checking authentication…</div>
+					</main>
+				</div>
+			);
+		}
+
+		// If not signed in, show the SignIn page
+		if (!user) {
+			return (
+				<div className="page">
+					<AnimatedBg />
+					<SignInView />
+				</div>
+			);
+		}
+
 		return (
 			<div className="page">
 				<AnimatedBg />
-				<Header />			<main>
+				<Header user={user} />
+				<main>
 				{/* Hero Section */}
 				<motion.section className="hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
 					<div className="hero-content">
