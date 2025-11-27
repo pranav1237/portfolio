@@ -43,6 +43,66 @@ For **GitHub**, you need to set this up:
 
 For **Google**, it should be auto-configured.
 
+---
+
+## Phone Authentication (Detailed Setup)
+
+Phone authentication on the web requires additional steps beyond enabling the provider. Follow these exactly:
+
+1. In Firebase Console: **Authentication** → **Sign-in method** → **Phone** → **Enable** (toggle ON).
+
+2. reCAPTCHA verifier (web):
+   - Firebase uses a reCAPTCHA verifier for `signInWithPhoneNumber`. You must render a reCAPTCHA widget on your page (invisible or visible) and pass the `recaptchaVerifier` instance to `signInWithPhoneNumber`.
+   - Example (client-side):
+
+```javascript
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { auth } from './firebase';
+
+// create an invisible reCAPTCHA and attach it to the element with id 'recaptcha-container'
+window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+  'size': 'invisible',
+  'callback': (response) => {
+    // reCAPTCHA solved - will proceed with signInWithPhoneNumber
+  }
+}, auth);
+
+const phoneNumber = '+91xxxxxxxxxx'; // E.164 format
+const appVerifier = window.recaptchaVerifier;
+signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+  .then(confirmationResult => {
+    // SMS sent. Ask user for the verification code and then confirm:
+    const code = window.prompt('Enter the SMS code');
+    return confirmationResult.confirm(code);
+  })
+  .then((result) => {
+    // User signed in
+    console.log('Phone auth success', result.user);
+  })
+  .catch((err) => console.error('Phone auth error', err));
+```
+
+3. Add test phone numbers for development (recommended):
+   - In Firebase Console → Authentication → Sign-in method → Phone → Add phone number (under 'Phone numbers for testing').
+   - Add a test number and verification code for development so you can avoid real SMS charges and faster testing.
+
+4. reCAPTCHA domain restrictions:
+   - Ensure the domain you use for testing (preview or production) is added to **Authorized domains** (Authentication → Settings). If using many preview domains, add the specific preview domain shown in the popup.
+
+5. Server-side phone quotas & restrictions:
+   - For production, follow Firebase quotas and consider using a verification backend if you need higher volumes.
+
+6. Troubleshooting tips:
+   - Error `auth/unauthorized-domain` → add exact domain to Authorized domains.
+   - Error `auth/invalid-phone-number` → ensure E.164 format (e.g. `+919876543210`).
+   - Error `auth/quota-exceeded` → check Firebase console usage and quotas.
+
+7. Security note:
+   - Do not commit production SMS debug codes or real phone numbers to source control. Use environment variables and Firebase test numbers for development.
+
+---
+
+
 ### Step 4: Test Authentication
 
 1. Wait 2-3 minutes after saving changes

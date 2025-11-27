@@ -52,6 +52,8 @@ function Header({ user }) {
 
 function SignInView() {
 	const domain = typeof window !== 'undefined' ? window.location.hostname : '';
+	const [showPhoneHelp, setShowPhoneHelp] = useState(false);
+	// import firebaseConfig dynamically where possible
 
 	async function copyDomain() {
 		try {
@@ -91,9 +93,32 @@ function SignInView() {
 					<button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
 				</div>
 				<div className="phone-auth-note" style={{marginTop:16,color:'#9aa3bd'}}>
-					<strong>Note:</strong> Phone authentication requires additional configuration in Firebase (reCAPTCHA, phone numbers, and verification). See the project docs: 
+					<strong>Note:</strong> Phone authentication requires additional configuration in Firebase (reCAPTCHA, test phone numbers). See the project docs: 
 					<a href="/FIREBASE_AUTH_SETUP.md" target="_blank" rel="noreferrer" style={{color:'#9ad0ff',marginLeft:6}}>Firebase Auth Setup</a>
+					<button className="btn small" style={{marginLeft:12}} onClick={() => setShowPhoneHelp(s => !s)}>{showPhoneHelp ? 'Hide' : 'Show'} phone steps</button>
+					<button className="btn small outline" style={{marginLeft:8}} onClick={() => {
+						// show a quick view of firebase config
+						try {
+							// lazy import firebaseConfig from firebase module
+							import('./firebase').then(mod => {
+								const cfg = mod.firebaseConfig || {};
+								alert('Firebase config:\n' + JSON.stringify({ authDomain: cfg.authDomain, projectId: cfg.projectId }, null, 2));
+							}).catch(e => alert('Could not load firebase config: ' + e.message));
+						} catch (e) { alert('Error showing config: ' + e.message); }
+					}}>Show Firebase config</button>
 				</div>
+
+				{showPhoneHelp && (
+					<div className="phone-help" style={{marginTop:12,background:'rgba(255,255,255,0.02)',padding:12,borderRadius:8}}>
+						<h4 style={{margin:'0 0 6px'}}>Phone Auth - Quick Steps</h4>
+						<ol style={{margin:'0 0 0 18px',color:'#9aa3bd'}}>
+							<li>Enable <strong>Phone</strong> provider in Firebase Console → Authentication → Sign-in method.</li>
+							<li>Add test phone numbers (Authentication → Sign-in method → Phone → Phone numbers for testing).</li>
+							<li>Implement a reCAPTCHA verifier and call <code>signInWithPhoneNumber</code> (see repo docs).</li>
+							<li>If you see `auth/unauthorized-domain`, add the exact domain to Authorized domains.</li>
+						</ol>
+					</div>
+				)}
 			</div>
 		</div>
 	);

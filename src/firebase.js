@@ -25,6 +25,8 @@ const fallbackConfig = {
 const hasAllEnvVars = Object.values(envConfig).every(v => v);
 const firebaseConfig = hasAllEnvVars ? envConfig : fallbackConfig;
 
+export { firebaseConfig };
+
 if (!hasAllEnvVars) {
   console.warn('[firebase] ⚠️ Not all VITE_FIREBASE_* env vars were present; using fallback config.');
 }
