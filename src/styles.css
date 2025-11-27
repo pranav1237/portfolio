@@ -718,3 +718,76 @@ footer p {
 		gap: 24px;
 	}
 }
+
+/* Sign-In Page */
+.signin-page {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	padding: 20px;
+	position: relative;
+	z-index: 10;
+}
+
+.signin-card {
+	background: linear-gradient(135deg, rgba(15, 20, 36, 0.9) 0%, rgba(10, 14, 26, 0.95) 100%);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 16px;
+	padding: 60px 40px;
+	max-width: 500px;
+	width: 100%;
+	text-align: center;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.signin-card h2 {
+	font-size: 28px;
+	margin: 0 0 12px;
+	background: linear-gradient(135deg, #e0e7ff 0%, var(--cyan) 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.signin-card p {
+	color: var(--muted);
+	font-size: 15px;
+	margin: 0 0 32px;
+	line-height: 1.5;
+}
+
+.signin-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.signin-actions .btn {
+	width: 100%;
+	justify-content: center;
+	padding: 14px 20px;
+	font-size: 15px;
+}
+
+.signin-actions .btn.google {
+	background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+	color: white;
+	border: none;
+}
+
+.signin-actions .btn.google:hover {
+	opacity: 0.9;
+	box-shadow: 0 8px 24px rgba(66, 133, 244, 0.3);
+}
+
+.loading-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	font-size: 18px;
+	color: var(--muted);
+}
