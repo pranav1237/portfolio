@@ -3,10 +3,13 @@
 ## Your Current Vercel Domain(s)
 Preview and production Vercel domains can change per deployment. When you see the "unauthorized-domain" alert, copy the domain shown in the alert and add that exact domain to Firebase Authorized domains.
 
+Important: Firebase **does not** accept wildcard domains (for example, `*.vercel.app` is not supported). You must add each domain exactly as shown.
+
 Common examples you may encounter (add whichever matches your alert):
 ```
 pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app
 pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app
+pranavmahajanportfolio-git-main-pranav1237s-projects.vercel.app
 ```
 
 ## Error You're Seeing
@@ -24,7 +27,7 @@ Contact admin. (Domain: pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.ap
 
 ### Step 2: Add Your Vercel Domain
 - Click **Add domain** button
- - Enter the exact Vercel domain shown in your error alert (for example `pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app`) and click **Add**
+- Enter the exact Vercel domain shown in your error alert (for example `pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app`) and click **Add**
 
 ### Step 3: Verify All Domains Are Present
 You should have these authorized domains:
@@ -33,6 +36,7 @@ You should have these authorized domains:
 - ✅ `pranavportfolio-1b517.firebaseapp.com` (Firebase hosting domain - must be here)
  - ✅ `pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app` (Your Vercel domain - ADD THIS NOW)
  - ✅ `pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app` (Preview domain — add this if shown in your alert)
+ - ✅ `pranavmahajanportfolio-git-main-pranav1237s-projects.vercel.app` (Another preview domain — add this if shown in your alert)
 - ✅ Any custom domains you use
 
 ### Step 4: Verify Sign-in Methods Are Enabled
@@ -52,10 +56,15 @@ You should have these authorized domains:
 - Go to your GitHub OAuth App: https://github.com/settings/developers
 - Select your app
 - Set **Authorization callback URL** to:
-  ```
-  https://pranavportfolio-1b517.firebaseapp.com/__/auth/handler
-  ```
-  (This is the Firebase auth handler endpoint)
+ ```
+ https://pranavportfolio-1b517.firebaseapp.com/__/auth/handler
+ ```
+ (This is the Firebase auth handler endpoint)
+
+## Recommended long-term approach
+
+- Add a custom domain to your Vercel project (for example `pranavmahajanportfolio.com`) and add that exact custom domain to Firebase Authorized domains. Using a stable custom domain avoids having to add many preview domains.
+- If you need to test preview environments frequently, add the specific preview domains you use (copy them from the popup) to Firebase when they appear.
 
 ## After Making These Changes
 
