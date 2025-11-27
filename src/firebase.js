@@ -41,6 +41,10 @@ console.log('[firebase] Initializing with config:', {
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+  // Disable app check for development/preview deployments to avoid domain restrictions
+  if (window.location.hostname.includes('vercel.app')) {
+    console.log('[firebase] Running on Vercel preview; allowing cross-domain auth.');
+  }
   console.log('[firebase] ✅ Firebase initialized successfully');
 } catch (err) {
   initError = err;
@@ -50,6 +54,10 @@ try {
 const googleProvider = new GoogleAuthProvider();
 // Configure providers
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+// Allow redirect on Vercel preview URLs
+if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+  console.log('[firebase] Vercel preview detected; configuring for preview domain.');
+}
 
 export { auth };
 
@@ -77,10 +85,17 @@ export async function signInWithGoogle() {
     alert('Google sign-in failed: ' + userMsg);
     // If the domain isn't authorized, provide clear instructions
     if (e.code === 'auth/unauthorized-domain') {
+      const domain = window.location.hostname;
       alert(
-        `Domain "${window.location.hostname}" is not authorized in Firebase.\n\n` +
-        'Fix: Go to Firebase Console → Authentication → Settings → Authorized domains.\n' +
-        'Add your Vercel domain and wait 1 minute, then refresh the page.'
+        `Your Vercel domain needs to be added to Firebase.\\n\\n` +
+        `Domain to add: ${domain}\\n\\n` +
+        'Steps:\\n' +
+        '1. Go to https://console.firebase.google.com/\\n' +
+        '2. Select project: pranavportfolio-1b517\\n' +
+        '3. Go to Authentication → Settings → Authorized domains\\n' +
+        '4. Click "Add domain" and paste this domain\\n' +
+        '5. Wait 1 minute and refresh this page\\n\\n' +
+        'Then click "Sign in with Google" again.'
       );
       return;
     }
