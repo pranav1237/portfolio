@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { auth, signInWithGoogle, signInWithGitHub, signOutUser } from './firebase';
+import { auth, signInWithGoogle, signOutUser } from './firebase';
 import './styles.css';
 
 // Animated background elements
@@ -46,9 +46,6 @@ function Header({ user }) {
 					<motion.div className="auth-buttons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
 						<button onClick={signInWithGoogle} className="btn google">
 							<span>🔐</span> Google
-						</button>
-						<button onClick={signInWithGitHub} className="btn github">
-							<span>🐙</span> GitHub
 						</button>
 					</motion.div>
 				)}
@@ -273,21 +270,18 @@ export default function Portfolio() {
 							<h3>Let's Connect!</h3>
 							<p>Interested in collaborating or have questions? Feel free to reach out!</p>
 							<div className="contact-links">
-								<a href="mailto:pranavmahajan.4122005@gmail.com" className="contact-link">
-									<span>📧</span> pranavmahajan.4122005@gmail.com
-								</a>
-								<a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" className="contact-link">
-									<span>🔗</span> LinkedIn Profile
-								</a>
-								<a href="https://github.com/pranav1237" target="_blank" className="contact-link">
-									<span>🐙</span> GitHub Profile
-								</a>
-								<div className="contact-link">
-									<span>📱</span> +91 7742091902
-								</div>
-								<div className="contact-link">
-									<span>📍</span> Greater Noida, India
-								</div>
+							<a href="mailto:pranavmahajan.4122005@gmail.com" className="contact-link">
+								<span>📧</span> pranavmahajan.4122005@gmail.com
+							</a>
+							<a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" className="contact-link">
+								<span>🔗</span> LinkedIn Profile
+							</a>
+							<a href="https://github.com/pranav1237" target="_blank" className="contact-link">
+								<span>🐙</span> GitHub Profile
+							</a>
+							<div className="contact-link">
+								<span>📍</span> Greater Noida, India
+							</div>
 							</div>
 						</div>
 						<ContactForm />
