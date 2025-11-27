@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import './styles.css';
+import { auth, signInWithGoogle, signOutUser } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 // Animated background elements
 function AnimatedBg() {
@@ -15,11 +17,16 @@ function AnimatedBg() {
 
 function Header() {
 	const [scrolled, setScrolled] = useState(false);
+    const [user, setUser] = useState(null);
 
 	useEffect(() => {
 		const handleScroll = () => setScrolled(window.scrollY > 50);
 		window.addEventListener('scroll', handleScroll);
-		return () => window.removeEventListener('scroll', handleScroll);
+		const unsubAuth = onAuthStateChanged(auth, (u) => setUser(u));
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+			if (unsubAuth) unsubAuth();
+		};
 	}, []);
 
 	return (
@@ -31,6 +38,18 @@ function Header() {
 				<h1>✨ Pranav Mahajan</h1>
 				<p>Full‑Stack Developer | AI/ML Specialist | Web Developer</p>
 			</motion.div>
+		</div>
+		<div className="auth-area">
+			{user ? (
+				<>
+					<span className="user-name">{user.displayName || user.email}</span>
+					<button className="btn" onClick={() => signOutUser()}>Sign out</button>
+				</>
+			) : (
+				<button className="btn google" onClick={() => signInWithGoogle()}>
+					Sign in with Google
+				</button>
+			)}
 		</div>
 		</motion.header>
 	);
