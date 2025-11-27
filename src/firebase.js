@@ -97,30 +97,27 @@ export async function signInWithGitHub() {
   }
   try {
     console.log('[firebase] Attempting GitHub sign-in...');
+    console.log('[firebase] GitHub Provider configured:', githubProvider);
+    console.log('[firebase] Auth domain:', firebaseConfig.authDomain);
     const result = await signInWithPopup(auth, githubProvider);
     console.log('[firebase] ✅ GitHub sign-in successful:', result.user.email);
+    alert('✅ GitHub sign-in successful! Welcome ' + result.user.displayName);
   } catch (e) {
     console.error('[firebase] GitHub sign-in error:', e.code, e.message);
+    console.error('[firebase] Full error object:', e);
+    
     const errorMap = {
       'auth/operation-not-supported-in-this-environment': 'Popups are blocked or not supported. Enable popups in browser settings.',
       'auth/popup-closed-by-user': 'Sign-in popup was closed.',
       'auth/unauthorized-domain': `⚠️ Your domain is not authorized in Firebase. Contact admin. (Domain: ${window.location.hostname})`,
-      'auth/configuration-not-found': 'Firebase configuration not found. Please ensure Firebase is properly configured.',
+      'auth/configuration-not-found': 'GitHub provider configuration is missing in Firebase Console.',
+      'auth/cancelled-popup-request': 'GitHub OAuth popup request was cancelled. Check if GitHub credentials are saved in Firebase Console and the callback URL is correct.',
+      'auth/network-request-failed': 'Network error. Check your internet connection.',
     };
+    
     const userMsg = errorMap[e.code] || e.message;
-    alert('GitHub sign-in failed: ' + userMsg);
-    if (e.code === 'auth/configuration-not-found') {
-      alert(
-        'GitHub sign-in failed: Firebase/GitHub configuration is missing.\n\n' +
-        'Fix steps:\n' +
-        '1) In Firebase Console -> Authentication -> Sign-in method -> GitHub, add your GitHub OAuth Client ID and Client Secret (do NOT commit secrets to the repo).\n' +
-        '2) In your GitHub OAuth App settings, set the Authorization callback URL to:\n' +
-        `   https://${firebaseConfig.authDomain}/__/auth/handler\n` +
-        '3) Ensure your Vercel domain is listed under Firebase Authorized domains (and the firebaseapp.com domain is present).\n\n' +
-        'If you prefer, paste the GitHub Client ID (but never the secret) here so I can confirm expected values (I will not store it in the repository).'
-      );
-      return;
-    }
+    console.warn('[firebase] Showing alert:', userMsg);
+    alert('❌ GitHub sign-in failed:\n\n' + userMsg);
   }
 }
 
