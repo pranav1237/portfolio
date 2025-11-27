@@ -70,6 +70,19 @@ function SignInView() {
 
 	return (
 		<div className="signin-page">
+			<div className="auth-banner" role="region" aria-live="polite">
+				<div className="auth-banner-inner">
+					<div>
+						<strong>Need to add this preview domain to Firebase?</strong>
+						<div className="auth-banner-sub">Click copy then open Firebase Console → Authentication → Settings → Authorized domains → Add domain</div>
+					</div>
+					<div className="auth-banner-actions">
+						<button className="btn small" onClick={copyDomain}>Copy domain</button>
+						<button className="btn outline small" onClick={openFirebaseConsole}>Open Firebase Console</button>
+					</div>
+				</div>
+			</div>
+
 			<div className="signin-card">
 				<h2>Sign in to view the portfolio</h2>
 				<p>Please sign in with Google to continue to the site.</p>

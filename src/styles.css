@@ -791,3 +791,30 @@ footer p {
 	font-size: 18px;
 	color: var(--muted);
 }
+
+/* Auth banner shown on SignIn page */
+.auth-banner {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	padding: 18px 20px;
+}
+.auth-banner-inner {
+	max-width: 980px;
+	width: 100%;
+	background: rgba(15,20,36,0.6);
+	border: 1px solid rgba(255,255,255,0.04);
+	padding: 12px 16px;
+	border-radius: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+}
+.auth-banner-sub {
+	color: var(--muted);
+	font-size: 13px;
+	margin-top: 4px;
+}
+.auth-banner-actions { display: flex; gap: 8px; align-items: center; }
+
