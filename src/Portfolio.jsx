@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { auth, signInWithGoogle, signOutUser } from './firebase';
 import './styles.css';
 
 // Animated background elements
@@ -14,7 +13,7 @@ function AnimatedBg() {
 	);
 }
 
-function Header({ user }) {
+function Header() {
 	const [scrolled, setScrolled] = useState(false);
 
 	useEffect(() => {
@@ -33,23 +32,6 @@ function Header({ user }) {
 				<p>Full‑Stack Developer | AI/ML Specialist | Web Developer</p>
 			</motion.div>
 		</div>
-			<div className="auth">
-				{user ? (
-					<motion.div className="user" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-						<img src={user.photoURL} alt={user.displayName} className="avatar" />
-						<div className="user-info">
-							<div>{user.displayName}</div>
-							<button onClick={signOutUser} className="btn small">Sign out</button>
-						</div>
-					</motion.div>
-				) : (
-					<motion.div className="auth-buttons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-						<button onClick={signInWithGoogle} className="btn google">
-							<span>🔐</span> Google
-						</button>
-					</motion.div>
-				)}
-			</div>
 		</motion.header>
 	);
 }
@@ -123,12 +105,9 @@ function ContactForm() {
 
 export default function Portfolio() {
 	const [repos, setRepos] = useState([]);
-	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		const unsub = auth ? auth.onAuthStateChanged(u => setUser(u)) : () => {};
-
 		fetch('https://api.github.com/users/pranav1237/repos?sort=updated&per_page=12')
 			.then(r => r.json())
 			.then(data => {
@@ -136,8 +115,6 @@ export default function Portfolio() {
 			})
 			.catch(() => {})
 			.finally(() => setLoading(false));
-
-		return () => unsub();
 	}, []);
 
 	const skills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'Firebase', 'ML/AI', 'C++', 'Pandas', 'NumPy', 'Git'];
@@ -149,7 +126,7 @@ export default function Portfolio() {
 		return (
 			<div className="page">
 				<AnimatedBg />
-				<Header user={user} />			<main>
+				<Header />			<main>
 				{/* Hero Section */}
 				<motion.section className="hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
 					<div className="hero-content">
