@@ -80,16 +80,8 @@ function SignInView() {
 				<div style={{ marginBottom: 12, color: '#9aa3bd' }}>Detected domain: <strong>{domain}</strong></div>
 
 				<div className="signin-actions">
-					{/* reCAPTCHA-enabled button; grecaptcha will call window.onRecaptchaSubmit(token) */}
-					<button
-						className="g-recaptcha btn google"
-						data-sitekey="6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK"
-						data-callback="onRecaptchaSubmit"
-						data-action="submit"
-						style={{ fontSize: 16 }}
-					>
-						Sign in with Google
-					</button>
+					{/* Programmatically execute reCAPTCHA then perform Google sign-in */}
+					<SignInButton />
 				</div>
 
 				<p style={{ marginTop: 16, color: '#9aa3bd' }}>
@@ -390,5 +382,48 @@ export default function Portfolio() {
 				</motion.div>
 			</footer>
 		</div>
+	);
+}
+
+function SignInButton() {
+	const [busy, setBusy] = useState(false);
+
+	const handleClick = async () => {
+		setBusy(true);
+		const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
+		try {
+			// Prefer enterprise API if available
+			let token = null;
+			if (typeof window !== 'undefined' && window.grecaptcha) {
+				const gre = window.grecaptcha;
+				// Use enterprise.execute if present
+				if (gre.enterprise && typeof gre.enterprise.execute === 'function') {
+					token = await gre.enterprise.execute(siteKey, { action: 'login' });
+				} else if (typeof gre.execute === 'function') {
+					token = await gre.execute(siteKey, { action: 'login' });
+				}
+			}
+
+			if (!token) {
+				// If grecaptcha didn't return a token, inform the user and still try sign-in
+				alert('reCAPTCHA not ready. Please wait a moment and try again.');
+				setBusy(false);
+				return;
+			}
+
+			// Pass token to firebase helper which may log/verify server-side later
+			await signInWithGoogleWithRecaptcha(token);
+		} catch (e) {
+			console.error('Sign-in flow error', e);
+			alert('Sign-in failed: ' + (e?.message || e));
+		} finally {
+			setBusy(false);
+		}
+	};
+
+	return (
+		<button className="btn google" onClick={handleClick} disabled={busy} style={{ fontSize: 16 }}>
+			{busy ? 'Signing in…' : 'Sign in with Google'}
+		</button>
 	);
 }
