@@ -53,6 +53,25 @@ try {
   } catch (pErr) {
     console.warn('[firebase] setPersistence unavailable:', pErr?.message || pErr);
   }
+  // Quick runtime validation: try fetching the project's OpenID configuration
+  // from the configured authDomain to detect misconfigured authDomain or blocked requests.
+  (async () => {
+    try {
+      const openidUrl = `https://${firebaseConfig.authDomain}/.well-known/openid-configuration`;
+      const resp = await fetch(openidUrl, { method: 'GET' });
+      if (!resp.ok) {
+        console.warn('[firebase] Could not fetch OpenID configuration from', openidUrl, 'status=', resp.status);
+        console.warn('[firebase] This often indicates the `authDomain` is incorrect or the domain is blocked.');
+        console.warn('[firebase] Ensure the Firebase project `authDomain` is the Firebase provided value (example: pr' +
+          'anavportfolio-1b517.firebaseapp.com) and that your Vercel domain is listed under Firebase Authorized domains.');
+      } else {
+        console.log('[firebase] OpenID configuration fetched successfully from', openidUrl);
+      }
+    } catch (e) {
+      console.warn('[firebase] Runtime authDomain check failed:', e?.message || e);
+      console.warn('[firebase] If this is a CORS or network issue, check browser console and ensure the authDomain is correct and reachable from the client.');
+    }
+  })();
   // Disable app check for development/preview deployments to avoid domain restrictions
   if (window.location.hostname.includes('vercel.app')) {
     console.log('[firebase] Running on Vercel preview; allowing cross-domain auth.');
