@@ -188,64 +188,122 @@ export async function signInWithGoogle() {
   }
 }
 
+// reCAPTCHA site key - used for both Enterprise and standard v3
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
+
+// Helper to get reCAPTCHA token
+async function getRecaptchaToken(action = 'login') {
+  if (typeof window === 'undefined') return null;
+  
+  const grecaptcha = window.grecaptcha;
+  if (!grecaptcha) {
+    console.warn('[firebase] grecaptcha not loaded');
+    return null;
+  }
+
+  try {
+    // Try Enterprise API first
+    if (grecaptcha.enterprise && typeof grecaptcha.enterprise.execute === 'function') {
+      console.log('[firebase] Using reCAPTCHA Enterprise');
+      const token = await grecaptcha.enterprise.execute(RECAPTCHA_SITE_KEY, { action });
+      console.log('[firebase] ✅ Got Enterprise token (len=' + token?.length + ')');
+      return { token, isEnterprise: true };
+    }
+    
+    // Fall back to standard v3
+    if (typeof grecaptcha.execute === 'function') {
+      console.log('[firebase] Using standard reCAPTCHA v3');
+      const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action });
+      console.log('[firebase] ✅ Got v3 token (len=' + token?.length + ')');
+      return { token, isEnterprise: false };
+    }
+    
+    console.warn('[firebase] No grecaptcha.execute method available');
+    return null;
+  } catch (e) {
+    console.error('[firebase] reCAPTCHA execute failed:', e?.message || e);
+    return null;
+  }
+}
+
+// Verify reCAPTCHA token with backend
+async function verifyRecaptchaToken(token, action = 'login') {
+  if (!token) return { success: false, reason: 'No token' };
+  
+  try {
+    console.log('[firebase] Verifying reCAPTCHA token server-side...');
+    const resp = await fetch('/api/verify-recaptcha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action }),
+    });
+    
+    if (!resp.ok) {
+      console.warn('[firebase] ⚠️ reCAPTCHA API error (status=' + resp.status + ')');
+      return { success: false, reason: 'API error', status: resp.status };
+    }
+    
+    const body = await resp.json();
+    
+    // Check if verification was skipped (no secrets configured)
+    if (body.skipped) {
+      console.log('[firebase] ℹ️ reCAPTCHA verification skipped (no secrets configured)');
+      return { success: true, skipped: true };
+    }
+    
+    // Check score threshold (0.3 is lenient, 0.5 is moderate, 0.7 is strict)
+    const scoreThreshold = 0.3;
+    const passed = body.success === true &&
+      (typeof body.score === 'undefined' || Number(body.score) >= scoreThreshold);
+    
+    if (passed) {
+      console.log('[firebase] ✅ reCAPTCHA verification passed', body.score ? `(score: ${body.score})` : '');
+    } else {
+      console.warn('[firebase] ⚠️ reCAPTCHA verification failed:', body);
+    }
+    
+    return { ...body, passed };
+  } catch (e) {
+    console.warn('[firebase] ⚠️ reCAPTCHA verification request failed:', e?.message || e);
+    return { success: false, reason: e?.message || 'Network error' };
+  }
+}
+
 // Run reCAPTCHA first (enterprise) and then sign in with Google.
 // This function tries to execute grecaptcha.enterprise if available and then proceeds
 // to call the regular Google sign-in flow. The token is logged for diagnostic
 // purposes — verifying the token requires a backend call to Google/recaptcha API.
-export async function signInWithGoogleWithRecaptcha(token) {
-  // If a token is passed (from grecaptcha callback), log it (do NOT send to client logs in production).
+export async function signInWithGoogleWithRecaptcha(providedToken = null) {
+  const action = 'login';
+  let token = providedToken;
+  
+  // Get token if not provided
+  if (!token) {
+    const result = await getRecaptchaToken(action);
+    token = result?.token;
+  }
+  
+  // Verify token (optional - proceeds even if verification fails)
   if (token) {
-    console.log('[firebase] Received reCAPTCHA token (len=' + String(token?.length) + ')');
-  } else if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.enterprise) {
-    try {
-      // Execute reCAPTCHA Enterprise with action 'login'
-      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
-      const tok = await window.grecaptcha.enterprise.execute(siteKey, { action: 'login' });
-      console.log('[firebase] Obtained reCAPTCHA token (len=' + String(tok?.length) + ')');
-      token = tok;
-    } catch (e) {
-      console.warn('[firebase] grecaptcha.execute failed:', e?.message || e);
+    const verification = await verifyRecaptchaToken(token, action);
+    
+    // If verification explicitly failed with low score, warn but continue
+    if (verification.success === false && verification.score !== undefined && verification.score < 0.3) {
+      console.warn('[firebase] ⚠️ Low reCAPTCHA score detected. User may be flagged as suspicious.');
+      // You could block sign-in here if you want strict enforcement:
+      // alert('Verification failed. Please try again.');
+      // return;
     }
-  } else if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.execute) {
-    // Fallback to standard grecaptcha if enterprise isn't present
-    try {
-      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
-      const tok = await window.grecaptcha.execute(siteKey, { action: 'login' });
-      console.log('[firebase] Obtained reCAPTCHA token (len=' + String(tok?.length) + ')');
-      token = tok;
-    } catch (e) {
-      console.warn('[firebase] grecaptcha.execute fallback failed:', e?.message || e);
-    }
+  } else {
+    console.warn('[firebase] ⚠️ No reCAPTCHA token available. Proceeding without verification.');
   }
 
-  // Attempt server-side reCAPTCHA verification (optional; if not configured, proceed anyway)
-  if (token) {
-    try {
-      console.log('[firebase] Verifying reCAPTCHA token server-side...');
-      const resp = await fetch('/api/verify-recaptcha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      });
-      if (resp.ok) {
-        const body = await resp.json();
-        const passed = body.success === true && (typeof body.score === 'undefined' || Number(body.score) >= 0.3);
-        if (passed) {
-          console.log('[firebase] ✅ reCAPTCHA verification passed');
-        } else {
-          console.warn('[firebase] ⚠️ reCAPTCHA score low:', body.score);
-        }
-      } else {
-        console.warn('[firebase] ⚠️ reCAPTCHA verification endpoint error (status=' + resp.status + '). Proceeding anyway.');
-      }
-    } catch (e) {
-      console.warn('[firebase] ⚠️ reCAPTCHA verification request failed:', e?.message || e, '. Proceeding with sign-in.');
-    }
-  }
-
-  // Proceed with Google sign-in flow (popup)
+  // Proceed with Google sign-in flow
   return await signInWithGoogle();
 }
+
+// Export for testing
+export { getRecaptchaToken, verifyRecaptchaToken, RECAPTCHA_SITE_KEY };
 
 // GitHub sign-in removed per user request to avoid OAuth/runtime issues in production.
 // If you later want to re-enable GitHub sign-in, re-add the provider and the
