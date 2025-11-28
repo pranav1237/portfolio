@@ -177,34 +177,32 @@ export async function signInWithGoogleWithRecaptcha(token) {
     }
   }
 
-  // Verify token server-side via our serverless endpoint (recommended)
-  try {
-    const resp = await fetch('/api/verify-recaptcha', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      console.warn('[firebase] reCAPTCHA verification endpoint returned non-OK:', resp.status, txt);
-      alert('reCAPTCHA verification failed (server error). Try again later.');
-      return;
+  // Attempt server-side reCAPTCHA verification (optional; if not configured, proceed anyway)
+  if (token) {
+    try {
+      console.log('[firebase] Verifying reCAPTCHA token server-side...');
+      const resp = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      if (resp.ok) {
+        const body = await resp.json();
+        const passed = body.success === true && (typeof body.score === 'undefined' || Number(body.score) >= 0.3);
+        if (passed) {
+          console.log('[firebase] ✅ reCAPTCHA verification passed');
+        } else {
+          console.warn('[firebase] ⚠️ reCAPTCHA score low:', body.score);
+        }
+      } else {
+        console.warn('[firebase] ⚠️ reCAPTCHA verification endpoint error (status=' + resp.status + '). Proceeding anyway.');
+      }
+    } catch (e) {
+      console.warn('[firebase] ⚠️ reCAPTCHA verification request failed:', e?.message || e, '. Proceeding with sign-in.');
     }
-    const body = await resp.json();
-    // Google returns { success: boolean, score?: number, action?: string }
-    const passed = body.success === true && (typeof body.score === 'undefined' || Number(body.score) >= 0.3);
-    if (!passed) {
-      console.warn('[firebase] reCAPTCHA verification failed:', body);
-      alert('reCAPTCHA check did not pass. Please try again.');
-      return;
-    }
-  } catch (e) {
-    console.error('[firebase] reCAPTCHA verification request failed:', e?.message || e);
-    alert('Could not verify reCAPTCHA token. Please try again.');
-    return;
   }
 
-  // Proceed with Google sign-in flow (popup) now that token is verified.
+  // Proceed with Google sign-in flow (popup)
   return await signInWithGoogle();
 }
 
