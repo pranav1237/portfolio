@@ -1,5 +1,32 @@
 # Firebase Domain Authorization Fix
 
+## ⚡ PERMANENT FIX (Recommended - Do This Once!)
+
+The issue is that Vercel creates a new unique domain for each deployment. Instead of adding each domain manually, **set up a stable production domain**:
+
+### Option 1: Use Vercel's Production Domain (FREE)
+1. Go to https://vercel.com/dashboard
+2. Select your project: `portfoliopranavmahajan`
+3. Go to **Settings** → **Domains**
+4. You should see a stable production domain like: `portfoliopranavmahajan.vercel.app`
+5. Add this EXACT domain to Firebase Authorized domains
+6. Always access your site via this stable URL
+
+### Option 2: Add a Custom Domain (Best)
+1. In Vercel Dashboard → Settings → Domains
+2. Add your custom domain (e.g., `pranavmahajan.com`)
+3. Add this custom domain to Firebase Authorized domains
+4. This domain never changes!
+
+### Option 3: Add ALL Your Vercel Domains Pattern
+Add these domains to Firebase (covers most deployments):
+```
+portfoliopranavmahajan.vercel.app          (production)
+portfoliopranavmahajan-pranav1237s-projects.vercel.app  (if this is your stable URL)
+```
+
+---
+
 ## Your Current Vercel Domain(s)
 Preview and production Vercel domains can change per deployment. When you see the "unauthorized-domain" alert, copy the domain shown in the alert and add that exact domain to Firebase Authorized domains.
 
@@ -7,6 +34,9 @@ Important: Firebase **does not** accept wildcard domains (for example, `*.vercel
 
 Common examples you may encounter (add whichever matches your alert):
 ```
+portfoliopranavmahajan.vercel.app
+portfoliopranavmahajan-gogy2fe41-pranav1237s-projects.vercel.app
+portfoliopranavmahajan-awjimztu4-pranav1237s-projects.vercel.app
 pranavportfolio-ok82sq9f2-pranav1237s-projects.vercel.app
 pranavportfolio-9xtn2h6hs-pranav1237s-projects.vercel.app
 pranavmahajanportfolio-git-main-pranav1237s-projects.vercel.app

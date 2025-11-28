@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 // Firebase config: Try env vars first, fall back to hardcoded values for Vercel deployment
 const envConfig = {
@@ -92,6 +92,21 @@ if (typeof window !== 'undefined') {
 
 export { auth };
 
+// Check for redirect result on page load (for signInWithRedirect flow)
+if (auth) {
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result && result.user) {
+        console.log('[firebase] ✅ Redirect sign-in successful:', result.user.email);
+      }
+    })
+    .catch((e) => {
+      if (e.code && e.code !== 'auth/popup-closed-by-user') {
+        console.error('[firebase] Redirect result error:', e.code, e.message);
+      }
+    });
+}
+
 export async function signInWithGoogle() {
   if (!auth) {
     const msg = `Firebase Auth not initialized. Error: ${initError?.message || 'Unknown'}`;
@@ -100,16 +115,36 @@ export async function signInWithGoogle() {
     return;
   }
   const currentDomain = window.location.hostname;
+  const isVercelPreview = currentDomain.includes('vercel.app') && !currentDomain.includes('pranavmahajan');
+  
   try {
     console.log('[firebase] Attempting Google sign-in from domain:', currentDomain);
+    
+    // Use redirect for Vercel preview deployments to avoid domain authorization issues
+    // Redirect flow works better because it uses the Firebase authDomain for the OAuth
+    if (isVercelPreview) {
+      console.log('[firebase] Using redirect flow for Vercel preview domain');
+      await signInWithRedirect(auth, googleProvider);
+      return; // Page will redirect, so we won't reach here
+    }
+    
+    // Use popup for known/stable domains
     const result = await signInWithPopup(auth, googleProvider);
     console.log('[firebase] ✅ Google sign-in successful:', result.user.email);
     return result;
   } catch (e) {
     console.error('[firebase] Google sign-in error:', e.code, e.message);
     
-    // Detailed error handling
+    // If popup fails with unauthorized-domain, try redirect as fallback
     if (e.code === 'auth/unauthorized-domain') {
+      console.log('[firebase] Popup failed with unauthorized-domain, trying redirect flow...');
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return; // Page will redirect
+      } catch (redirectError) {
+        console.error('[firebase] Redirect also failed:', redirectError);
+      }
+      
       console.error('[firebase] Domain error - current domain:', currentDomain);
       console.error('[firebase] authDomain:', firebaseConfig.authDomain);
       alert(
@@ -133,7 +168,13 @@ export async function signInWithGoogle() {
     }
     
     if (e.code === 'auth/operation-not-supported-in-this-environment') {
-      alert('❌ Popups are blocked. Enable popups in your browser settings and try again.');
+      alert('❌ Popups are blocked. Trying redirect method...');
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      } catch (redirectError) {
+        alert('❌ Sign-in failed. Please enable popups or try a different browser.');
+      }
       return;
     }
     
