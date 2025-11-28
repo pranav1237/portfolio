@@ -43,39 +43,37 @@ console.log('[firebase] Initializing with config:', {
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
-  // Ensure auth persistence is local so sessions survive long idle periods
-  try {
-    setPersistence(auth, browserLocalPersistence).then(() => {
-      console.log('[firebase] Auth persistence set to browserLocalPersistence');
-    }).catch((pErr) => {
+  
+  // CRITICAL: Set auth persistence to local BEFORE any auth operations
+  // This ensures sessions survive page reloads and long idle periods
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+      console.log('[firebase] ✅ Auth persistence set to browserLocalPersistence');
+    })
+    .catch((pErr) => {
       console.warn('[firebase] Could not set auth persistence:', pErr?.message || pErr);
     });
-  } catch (pErr) {
-    console.warn('[firebase] setPersistence unavailable:', pErr?.message || pErr);
-  }
-  // Quick runtime validation: try fetching the project's OpenID configuration
-  // from the configured authDomain to detect misconfigured authDomain or blocked requests.
+
+  // Get the current deployment domain
+  const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'unknown';
+  console.log('[firebase] Deployment domain:', currentDomain);
+  console.log('[firebase] Firebase authDomain:', firebaseConfig.authDomain);
+  
+  // Quick runtime validation
   (async () => {
     try {
       const openidUrl = `https://${firebaseConfig.authDomain}/.well-known/openid-configuration`;
       const resp = await fetch(openidUrl, { method: 'GET' });
-      if (!resp.ok) {
-        console.warn('[firebase] Could not fetch OpenID configuration from', openidUrl, 'status=', resp.status);
-        console.warn('[firebase] This often indicates the `authDomain` is incorrect or the domain is blocked.');
-        console.warn('[firebase] Ensure the Firebase project `authDomain` is the Firebase provided value (example: pr' +
-          'anavportfolio-1b517.firebaseapp.com) and that your Vercel domain is listed under Firebase Authorized domains.');
+      if (resp.ok) {
+        console.log('[firebase] ✅ OpenID config reachable');
       } else {
-        console.log('[firebase] OpenID configuration fetched successfully from', openidUrl);
+        console.warn('[firebase] ⚠️ OpenID config returned status', resp.status);
       }
     } catch (e) {
-      console.warn('[firebase] Runtime authDomain check failed:', e?.message || e);
-      console.warn('[firebase] If this is a CORS or network issue, check browser console and ensure the authDomain is correct and reachable from the client.');
+      console.warn('[firebase] ⚠️ OpenID config check failed:', e?.message);
     }
   })();
-  // Disable app check for development/preview deployments to avoid domain restrictions
-  if (window.location.hostname.includes('vercel.app')) {
-    console.log('[firebase] Running on Vercel preview; allowing cross-domain auth.');
-  }
+  
   console.log('[firebase] ✅ Firebase initialized successfully');
 } catch (err) {
   initError = err;
@@ -83,11 +81,13 @@ try {
 }
 
 const googleProvider = new GoogleAuthProvider();
-// Configure providers
-googleProvider.setCustomParameters({ prompt: 'select_account' });
-// Allow redirect on Vercel preview URLs
-if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-  console.log('[firebase] Vercel preview detected; configuring for preview domain.');
+// Configure Google provider
+googleProvider.setCustomParameters({ 
+  prompt: 'select_account'
+});
+if (typeof window !== 'undefined') {
+  const domain = window.location.hostname;
+  console.log('[firebase] Google provider configured for domain:', domain);
 }
 
 export { auth };
@@ -99,48 +99,51 @@ export async function signInWithGoogle() {
     alert('❌ Authentication unavailable: ' + msg);
     return;
   }
+  const currentDomain = window.location.hostname;
   try {
-    console.log('[firebase] Attempting Google sign-in...');
+    console.log('[firebase] Attempting Google sign-in from domain:', currentDomain);
     const result = await signInWithPopup(auth, googleProvider);
     console.log('[firebase] ✅ Google sign-in successful:', result.user.email);
+    return result;
   } catch (e) {
     console.error('[firebase] Google sign-in error:', e.code, e.message);
-    // Common Firebase errors
-    const errorMap = {
-      'auth/operation-not-supported-in-this-environment': 'Popups are blocked or not supported. Enable popups in browser settings.',
-      'auth/popup-closed-by-user': 'Sign-in popup was closed.',
-      'auth/unauthorized-domain': `⚠️ Your domain is not authorized in Firebase. Contact admin. (Domain: ${window.location.hostname})`,
-      'auth/configuration-not-found': 'Firebase configuration not found. Please ensure Firebase is properly configured.',
-    };
-    const userMsg = errorMap[e.code] || e.message;
-    alert('Google sign-in failed: ' + userMsg);
-    // If the domain isn't authorized, provide clear instructions
+    
+    // Detailed error handling
     if (e.code === 'auth/unauthorized-domain') {
-      // Firebase requires exact authorized domains; it does NOT accept wildcard entries.
-      // Show the exact domain to add and recommend long-term options.
-      const domain = window.location.hostname || 'your domain';
+      console.error('[firebase] Domain error - current domain:', currentDomain);
+      console.error('[firebase] authDomain:', firebaseConfig.authDomain);
       alert(
-        `Domain not authorized: ${domain}\n\n` +
-        'Important: Firebase Authorized Domains requires exact domains (wildcards like *.vercel.app are not supported).\n\n' +
-        'Immediate fixes:\n' +
-        `1) In Firebase Console -> Authentication -> Settings -> Authorized domains, click "Add domain" and paste: ${domain}\n` +
-        '2) Wait ~1 minute for propagation, then refresh this page and try signing in again.\n\n' +
-        'Recommended long-term solutions:\n' +
-        '- Add your stable production/custom domain (e.g. yoursite.example.com) to Firebase and use that for production deployments.\n' +
-        "- For many preview URLs: either add each preview domain shown in errors, or connect a single custom domain in Vercel so the deployed site uses a stable domain that you can add to Firebase.\n\n" +
-        'If you want, add the exact domain shown in the popup to the project now.'
+        `❌ Sign-in failed: Domain not authorized.\n` +
+        `Current domain: ${currentDomain}\n\n` +
+        `To fix:\n` +
+        `1) Go to Firebase Console → Authentication → Settings\n` +
+        `2) Add this exact domain to "Authorized domains": ${currentDomain}\n` +
+        `3) Wait 1-2 minutes and try again.\n\n` +
+        `Note: Firebase requires EXACT domain matching (no wildcards).`
       );
       return;
     }
-
+    
     if (e.code === 'auth/configuration-not-found') {
       alert(
-        'Google sign-in failed: Firebase configuration for this provider is missing.\n\n' +
-        'Fix: In the Firebase Console -> Authentication -> Sign-in method, open Google and ensure the provider is configured. ' +
-        'Also confirm your deployment domain is present under Authorized domains.'
+        '❌ Sign-in failed: Google provider not configured in Firebase.\n\n' +
+        'Fix: In Firebase Console → Authentication → Sign-in method → Enable Google provider.'
       );
       return;
     }
+    
+    if (e.code === 'auth/operation-not-supported-in-this-environment') {
+      alert('❌ Popups are blocked. Enable popups in your browser settings and try again.');
+      return;
+    }
+    
+    if (e.code === 'auth/popup-closed-by-user') {
+      console.log('[firebase] User closed sign-in popup');
+      return;
+    }
+    
+    // Generic error
+    alert('❌ Sign-in failed: ' + (e.message || e.code || 'Unknown error'));
   }
 }
 
