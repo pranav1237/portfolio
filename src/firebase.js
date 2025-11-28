@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 // Firebase config: Try env vars first, fall back to hardcoded values for Vercel deployment
 const envConfig = {
@@ -43,6 +43,16 @@ console.log('[firebase] Initializing with config:', {
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+  // Ensure auth persistence is local so sessions survive long idle periods
+  try {
+    setPersistence(auth, browserLocalPersistence).then(() => {
+      console.log('[firebase] Auth persistence set to browserLocalPersistence');
+    }).catch((pErr) => {
+      console.warn('[firebase] Could not set auth persistence:', pErr?.message || pErr);
+    });
+  } catch (pErr) {
+    console.warn('[firebase] setPersistence unavailable:', pErr?.message || pErr);
+  }
   // Disable app check for development/preview deployments to avoid domain restrictions
   if (window.location.hostname.includes('vercel.app')) {
     console.log('[firebase] Running on Vercel preview; allowing cross-domain auth.');
@@ -113,6 +123,41 @@ export async function signInWithGoogle() {
       return;
     }
   }
+}
+
+// Run reCAPTCHA first (enterprise) and then sign in with Google.
+// This function tries to execute grecaptcha.enterprise if available and then proceeds
+// to call the regular Google sign-in flow. The token is logged for diagnostic
+// purposes — verifying the token requires a backend call to Google/recaptcha API.
+export async function signInWithGoogleWithRecaptcha(token) {
+  // If a token is passed (from grecaptcha callback), log it (do NOT send to client logs in production).
+  if (token) {
+    console.log('[firebase] Received reCAPTCHA token (len=' + String(token?.length) + ')');
+  } else if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.enterprise) {
+    try {
+      // Execute reCAPTCHA Enterprise with action 'login'
+      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
+      const tok = await window.grecaptcha.enterprise.execute(siteKey, { action: 'login' });
+      console.log('[firebase] Obtained reCAPTCHA token (len=' + String(tok?.length) + ')');
+      token = tok;
+    } catch (e) {
+      console.warn('[firebase] grecaptcha.execute failed:', e?.message || e);
+    }
+  } else if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.execute) {
+    // Fallback to standard grecaptcha if enterprise isn't present
+    try {
+      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
+      const tok = await window.grecaptcha.execute(siteKey, { action: 'login' });
+      console.log('[firebase] Obtained reCAPTCHA token (len=' + String(tok?.length) + ')');
+      token = tok;
+    } catch (e) {
+      console.warn('[firebase] grecaptcha.execute fallback failed:', e?.message || e);
+    }
+  }
+
+  // Proceed with Google sign-in flow (popup). The token can be verified server-side
+  // if you want to validate the human interaction before creating sessions.
+  return await signInWithGoogle();
 }
 
 // GitHub sign-in removed per user request to avoid OAuth/runtime issues in production.

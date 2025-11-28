@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import './styles.css';
-import { auth, signInWithGoogle, signOutUser } from './firebase';
+import { auth, signInWithGoogle, signOutUser, signInWithGoogleWithRecaptcha } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 // Animated background elements
@@ -52,73 +52,49 @@ function Header({ user }) {
 
 function SignInView() {
 	const domain = typeof window !== 'undefined' ? window.location.hostname : '';
-	const [showPhoneHelp, setShowPhoneHelp] = useState(false);
-	// import firebaseConfig dynamically where possible
 
-	async function copyDomain() {
-		try {
-			await navigator.clipboard.writeText(domain);
-			alert('Domain copied to clipboard: ' + domain);
-		} catch (err) {
-			console.warn('Clipboard write failed', err);
-			prompt('Copy this domain and paste it into Firebase Authorized domains:', domain);
-		}
-	}
+	useEffect(() => {
+		// Expose a global callback name for the reCAPTCHA data-callback attribute.
+		// grecaptcha will call window.onRecaptchaSubmit(token)
+		window.onRecaptchaSubmit = async function (token) {
+			try {
+				await signInWithGoogleWithRecaptcha(token);
+			} catch (e) {
+				console.error('Sign-in with recaptcha failed:', e);
+				alert('Sign-in failed: ' + (e?.message || e));
+			}
+		};
+		return () => {
+			try { delete window.onRecaptchaSubmit; } catch (e) {}
+		};
+	}, []);
 
-	function openFirebaseConsole() {
-		const url = `https://console.firebase.google.com/project/pranavportfolio-1b517/authentication/settings`;
-		window.open(url, '_blank');
-	}
+	// If grecaptcha.enterprise is available we will use the g-recaptcha button attributes
+	// The markup below uses `data-sitekey` and `data-callback` per the reCAPTCHA docs.
 
 	return (
 		<div className="signin-page">
-			<div className="auth-banner" role="region" aria-live="polite">
-				<div className="auth-banner-inner">
-					<div>
-						<strong>Need to add this preview domain to Firebase?</strong>
-						<div className="auth-banner-sub">Click copy then open Firebase Console → Authentication → Settings → Authorized domains → Add domain</div>
-					</div>
-					<div className="auth-banner-actions">
-						<button className="btn small" onClick={copyDomain}>Copy domain</button>
-						<button className="btn outline small" onClick={openFirebaseConsole}>Open Firebase Console</button>
-					</div>
-				</div>
-			</div>
-
 			<div className="signin-card">
 				<h2>Sign in to view the portfolio</h2>
-				<p>Please sign in with Google to continue to the site.</p>
-				<div style={{marginBottom:12,color:'#9aa3bd'}}>Detected domain: <strong>{domain}</strong></div>
+				<p>Please verify you're human and sign in with Google to continue.</p>
+				<div style={{ marginBottom: 12, color: '#9aa3bd' }}>Detected domain: <strong>{domain}</strong></div>
+
 				<div className="signin-actions">
-					<button className="btn google" onClick={() => signInWithGoogle()}>Sign in with Google</button>
-				</div>
-				<div className="phone-auth-note" style={{marginTop:16,color:'#9aa3bd'}}>
-					<strong>Note:</strong> Phone authentication requires additional configuration in Firebase (reCAPTCHA, test phone numbers). See the project docs: 
-					<a href="/FIREBASE_AUTH_SETUP.md" target="_blank" rel="noreferrer" style={{color:'#9ad0ff',marginLeft:6}}>Firebase Auth Setup</a>
-					<button className="btn small" style={{marginLeft:12}} onClick={() => setShowPhoneHelp(s => !s)}>{showPhoneHelp ? 'Hide' : 'Show'} phone steps</button>
-					<button className="btn small outline" style={{marginLeft:8}} onClick={() => {
-						// show a quick view of firebase config
-						try {
-							// lazy import firebaseConfig from firebase module
-							import('./firebase').then(mod => {
-								const cfg = mod.firebaseConfig || {};
-								alert('Firebase config:\n' + JSON.stringify({ authDomain: cfg.authDomain, projectId: cfg.projectId }, null, 2));
-							}).catch(e => alert('Could not load firebase config: ' + e.message));
-						} catch (e) { alert('Error showing config: ' + e.message); }
-					}}>Show Firebase config</button>
+					{/* reCAPTCHA-enabled button; grecaptcha will call window.onRecaptchaSubmit(token) */}
+					<button
+						className="g-recaptcha btn google"
+						data-sitekey="6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK"
+						data-callback="onRecaptchaSubmit"
+						data-action="submit"
+						style={{ fontSize: 16 }}
+					>
+						Sign in with Google
+					</button>
 				</div>
 
-				{showPhoneHelp && (
-					<div className="phone-help" style={{marginTop:12,background:'rgba(255,255,255,0.02)',padding:12,borderRadius:8}}>
-						<h4 style={{margin:'0 0 6px'}}>Phone Auth - Quick Steps</h4>
-						<ol style={{margin:'0 0 0 18px',color:'#9aa3bd'}}>
-							<li>Enable <strong>Phone</strong> provider in Firebase Console → Authentication → Sign-in method.</li>
-							<li>Add test phone numbers (Authentication → Sign-in method → Phone → Phone numbers for testing).</li>
-							<li>Implement a reCAPTCHA verifier and call <code>signInWithPhoneNumber</code> (see repo docs).</li>
-							<li>If you see `auth/unauthorized-domain`, add the exact domain to Authorized domains.</li>
-						</ol>
-					</div>
-				)}
+				<p style={{ marginTop: 16, color: '#9aa3bd' }}>
+					Note: If the page reports repeated login prompts after long idle periods, ensure the domain above is listed in Firebase Authorized domains and that the project is using a stable custom domain. I set auth persistence to local to reduce repeated login prompts.
+				</p>
 			</div>
 		</div>
 	);
