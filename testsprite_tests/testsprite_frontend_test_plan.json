@@ -1,0 +1,10 @@
+﻿{
+    "name":  "minimal-frontend-check",
+    "steps":  [
+                  {
+                      "url":  "{{executionArgs.url}}",
+                      "action":  "visit",
+                      "wait":  1000
+                  }
+              ]
+}

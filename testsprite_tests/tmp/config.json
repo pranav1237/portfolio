@@ -1,0 +1,9 @@
+﻿{
+    "executionArgs":  {
+                          "url":  "https://your-vercel-url",
+                          "envs":  {
+                                       "TESTSPRITE_API_KEY":  "REPLACE_WITH_YOUR_KEY"
+                                   },
+                          "testPlanName":  "testsprite_frontend_test_plan.json"
+                      }
+}
