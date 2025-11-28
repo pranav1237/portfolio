@@ -174,8 +174,34 @@ export async function signInWithGoogleWithRecaptcha(token) {
     }
   }
 
-  // Proceed with Google sign-in flow (popup). The token can be verified server-side
-  // if you want to validate the human interaction before creating sessions.
+  // Verify token server-side via our serverless endpoint (recommended)
+  try {
+    const resp = await fetch('/api/verify-recaptcha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      console.warn('[firebase] reCAPTCHA verification endpoint returned non-OK:', resp.status, txt);
+      alert('reCAPTCHA verification failed (server error). Try again later.');
+      return;
+    }
+    const body = await resp.json();
+    // Google returns { success: boolean, score?: number, action?: string }
+    const passed = body.success === true && (typeof body.score === 'undefined' || Number(body.score) >= 0.3);
+    if (!passed) {
+      console.warn('[firebase] reCAPTCHA verification failed:', body);
+      alert('reCAPTCHA check did not pass. Please try again.');
+      return;
+    }
+  } catch (e) {
+    console.error('[firebase] reCAPTCHA verification request failed:', e?.message || e);
+    alert('Could not verify reCAPTCHA token. Please try again.');
+    return;
+  }
+
+  // Proceed with Google sign-in flow (popup) now that token is verified.
   return await signInWithGoogle();
 }
 
