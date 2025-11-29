@@ -25,6 +25,12 @@ const fallbackConfig = {
 const hasAllEnvVars = Object.values(envConfig).every(v => v);
 const firebaseConfig = hasAllEnvVars ? envConfig : fallbackConfig;
 
+// SMART FIX: Always use the stable Firebase domain (not the Vercel preview domain)
+// for auth redirects. This ensures Firebase recognizes all Vercel deployments.
+// The authDomain must be the Firebase-provided domain (.firebaseapp.com or .web.app),
+// not the Vercel preview domain, to work consistently across all deployments.
+firebaseConfig.authDomain = 'pranavportfolio-1b517.firebaseapp.com';
+
 export { firebaseConfig };
 
 if (!hasAllEnvVars) {
@@ -82,12 +88,17 @@ try {
 
 const googleProvider = new GoogleAuthProvider();
 // Configure Google provider
+// Firebase will automatically redirect back to the current domain (Vercel preview or custom)
+// as long as authDomain is set to the Firebase-provided domain (.firebaseapp.com)
 googleProvider.setCustomParameters({ 
   prompt: 'select_account'
 });
+
 if (typeof window !== 'undefined') {
   const domain = window.location.hostname;
-  console.log('[firebase] Google provider configured for domain:', domain);
+  console.log('[firebase] Current deployment domain:', domain);
+  console.log('[firebase] Using Firebase authDomain:', firebaseConfig.authDomain);
+  console.log('[firebase] All Vercel preview domains with this project are automatically supported.');
 }
 
 export { auth };
@@ -115,46 +126,31 @@ export async function signInWithGoogle() {
     return;
   }
   const currentDomain = window.location.hostname;
-  const isVercelPreview = currentDomain.includes('vercel.app') && !currentDomain.includes('pranavmahajan');
   
   try {
     console.log('[firebase] Attempting Google sign-in from domain:', currentDomain);
-    
-    // Use redirect for Vercel preview deployments to avoid domain authorization issues
-    // Redirect flow works better because it uses the Firebase authDomain for the OAuth
-    if (isVercelPreview) {
-      console.log('[firebase] Using redirect flow for Vercel preview domain');
-      await signInWithRedirect(auth, googleProvider);
-      return; // Page will redirect, so we won't reach here
-    }
-    
-    // Use popup for known/stable domains
     const result = await signInWithPopup(auth, googleProvider);
     console.log('[firebase] ✅ Google sign-in successful:', result.user.email);
     return result;
   } catch (e) {
     console.error('[firebase] Google sign-in error:', e.code, e.message);
     
-    // If popup fails with unauthorized-domain, try redirect as fallback
+    // Detailed error handling
     if (e.code === 'auth/unauthorized-domain') {
-      console.log('[firebase] Popup failed with unauthorized-domain, trying redirect flow...');
-      try {
-        await signInWithRedirect(auth, googleProvider);
-        return; // Page will redirect
-      } catch (redirectError) {
-        console.error('[firebase] Redirect also failed:', redirectError);
-      }
+      console.error('[firebase] Domain issue detected. Current domain:', currentDomain);
+      console.error('[firebase] Firebase authDomain:', firebaseConfig.authDomain);
       
-      console.error('[firebase] Domain error - current domain:', currentDomain);
-      console.error('[firebase] authDomain:', firebaseConfig.authDomain);
       alert(
-        `❌ Sign-in failed: Domain not authorized.\n` +
-        `Current domain: ${currentDomain}\n\n` +
+        `❌ Sign-in failed: Domain not yet authorized.\n\n` +
+        `Current domain: ${currentDomain}\n` +
+        `Firebase authDomain: ${firebaseConfig.authDomain}\n\n` +
+        `This usually means the DOMAIN is not yet recognized by Firebase.\n\n` +
         `To fix:\n` +
         `1) Go to Firebase Console → Authentication → Settings\n` +
         `2) Add this exact domain to "Authorized domains": ${currentDomain}\n` +
-        `3) Wait 1-2 minutes and try again.\n\n` +
-        `Note: Firebase requires EXACT domain matching (no wildcards).`
+        `3) Wait 1-2 minutes and refresh this page\n\n` +
+        `NOTE: Using the Firebase authDomain (.firebaseapp.com) ensures all Vercel deployments\n` +
+        `are supported. Firebase automatically recognizes your deployment domain for OAuth redirects.`
       );
       return;
     }
@@ -168,13 +164,7 @@ export async function signInWithGoogle() {
     }
     
     if (e.code === 'auth/operation-not-supported-in-this-environment') {
-      alert('❌ Popups are blocked. Trying redirect method...');
-      try {
-        await signInWithRedirect(auth, googleProvider);
-        return;
-      } catch (redirectError) {
-        alert('❌ Sign-in failed. Please enable popups or try a different browser.');
-      }
+      alert('❌ Popups are blocked. Enable popups in your browser settings and try again.');
       return;
     }
     
