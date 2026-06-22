@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "203675250878",
+    "project_id": "pranavportfolio-1b517",
+    "storage_bucket": "pranavportfolio-1b517.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203675250878:android:18d5ba3308d8321278eeef",
+        "android_client_info": {
+          "package_name": "pranavmahajanportfolio.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "203675250878-h5fqvek2okrjevbd1bs4hnqeb7v8fk78.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd18f4mtYvaskp1lxgryDS1XdrIlhPnaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "203675250878-h5fqvek2okrjevbd1bs4hnqeb7v8fk78.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
