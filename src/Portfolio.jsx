@@ -28,29 +28,25 @@ function Scene(){
   const rig=useRef();
   useFrame(state=>{
     if(!rig.current)return;
-    const targetY=state.pointer.x*.22;
-    const targetX=-state.pointer.y*.12;
-    rig.current.rotation.y=THREE.MathUtils.lerp(rig.current.rotation.y,targetY,.06);
-    rig.current.rotation.x=THREE.MathUtils.lerp(rig.current.rotation.x,targetX,.06);
-    rig.current.position.y=Math.sin(state.clock.elapsedTime*.9)*.05;
+    const tx=state.pointer.x*.18, ty=-state.pointer.y*.10;
+    rig.current.rotation.y=THREE.MathUtils.lerp(rig.current.rotation.y,tx,.05);
+    rig.current.rotation.x=THREE.MathUtils.lerp(rig.current.rotation.x,ty,.05);
   });
   return <>
-    <ambientLight intensity={1.6}/>
-    <directionalLight position={[2,3,4]} intensity={2.8}/>
+    <ambientLight intensity={1.35}/>
+    <directionalLight position={[2,4,3]} intensity={2.2}/>
     <pointLight position={[-2,1,2]} intensity={2} color="#b8ff50"/>
-    <Sparkles count={70} scale={[4.8,5.6,3.8]} size={2.2} speed={.3} color="#b8ff50"/>
-    <Float speed={1.1} rotationIntensity={.12} floatIntensity={.18}>
-      <group ref={rig}>
-        <mesh rotation={[Math.PI/2,0,0]} position={[0,-1.76,0]}>
-          <torusGeometry args={[1.55,.015,16,96]}/>
-          <meshBasicMaterial color="#b8ff50" transparent opacity={.35}/>
-        </mesh>
-        <mesh rotation={[Math.PI/2,0,0]} position={[0,-1.76,0]}>
-          <torusGeometry args={[1.84,.008,16,96]}/>
-          <meshBasicMaterial color="#a58aff" transparent opacity={.25}/>
-        </mesh>
-      </group>
-    </Float>
+    <Sparkles count={55} scale={[4.8,5.8,3.6]} size={1.9} speed={.25} color="#b8ff50"/>
+    <group ref={rig}>
+      <mesh rotation={[Math.PI/2,0,0]} position={[0,-1.72,0]}>
+        <torusGeometry args={[1.52,.014,16,96]}/>
+        <meshBasicMaterial color="#b8ff50" transparent opacity={.33}/>
+      </mesh>
+      <mesh rotation={[Math.PI/2,0,0]} position={[0,-1.72,0]}>
+        <torusGeometry args={[1.82,.008,16,96]}/>
+        <meshBasicMaterial color="#a58aff" transparent opacity={.22}/>
+      </mesh>
+    </group>
   </>;
 }
 
@@ -60,23 +56,25 @@ function AvatarStage(){
   const move=e=>{
     const r=e.currentTarget.getBoundingClientRect();
     const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
-    setTilt({x:py*-7,y:px*9});
+    setTilt({x:py*-6,y:px*8});
   };
   return <div className={"avatar-stage "+(pulse?'is-pulsed':'')} onPointerMove={move} onPointerLeave={()=>setTilt({x:0,y:0})}>
     <Canvas className="avatar-canvas" camera={{position:[0,0,4.7],fov:36}} dpr={[1,1.5]} gl={{alpha:true,antialias:true}}>
       <Suspense fallback={null}><Scene/></Suspense>
     </Canvas>
-    <motion.div className="avatar-visual" animate={{rotateX:tilt.x,rotateY:tilt.y,y:[0,-7,0]}} transition={{rotateX:{duration:.18},rotateY:{duration:.18},y:{duration:4,repeat:Infinity,ease:'easeInOut'}}} style={{transformPerspective:1000}}>
-      <img className="avatar-media" src="/avatar.webp" alt="Pranav Mahajan animated avatar in T-pose"/>
-      <div className="avatar-shadow"/>
+    <motion.div className="avatar-photo-wrap" animate={{rotateX:tilt.x,rotateY:tilt.y,y:[0,-6,0]}} transition={{rotateX:{duration:.18},rotateY:{duration:.18},y:{duration:4,repeat:Infinity,ease:'easeInOut'}}} style={{transformPerspective:1000}}>
+      <div className="avatar-light"/>
+      <img className="avatar-media" src="/avatar-standing.webp" alt="Pranav Mahajan standing 3D avatar"/>
+      <div className="avatar-floor-glow"/>
     </motion.div>
     <div className="avatar-ui">
       <button type="button" onClick={()=>setPulse(v=>!v)} className="avatar-button">{pulse?'RESET AVATAR':'INTERACT WITH AVATAR'} <span>↗</span></button>
-      <div className="avatar-status"><b>01</b><span>LIVE T-POSE</span><i/></div>
+      <div className="avatar-status"><b>01</b><span>LIVE STANCE</span><i/></div>
     </div>
-    <div className="avatar-label label-a">MOVE YOUR CURSOR</div>
+    <div className="avatar-label label-a">MOVE / TILT</div>
     <div className="avatar-label label-b">AI × HUMAN</div>
     <div className="avatar-scan"/>
+    <div className="avatar-corner">PM-01 / INTERACTIVE PORTRAIT</div>
   </div>
 }
 
