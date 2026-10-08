@@ -1,5 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { ContactShadows, Environment, OrbitControls, useAnimations, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 import './styles.css';
 
 const skills=['Python','SQL','Java','C++','JavaScript','React','Node.js','Pandas','NumPy','Scikit-learn','Machine Learning','Agentic AI','LangChain','LangGraph','CrewAI','Power BI','Tableau','Excel','Git'];
@@ -21,29 +24,70 @@ const projects=[
 
 function Header(){return <header className="site-header"><a className="brand" href="#top"><span className="brand-mark">PM</span><span><strong>Pranav Mahajan</strong><small>AI/ML × DATA × SOFTWARE</small></span></a><nav><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#stack">Stack</a><a href="#contact">Contact</a><a className="nav-cta" href="/Pranav_Mahajan_Resume.docx">Resume ↗</a></nav></header>}
 
+function AvatarModel(){
+  const group=useRef();
+  const {scene,animations}=useGLTF('/model.glb');
+  const {actions}=useAnimations(animations,group);
+  useEffect(()=>{
+    const name=animations.find(a=>/idle/i.test(a.name))?.name || animations[0]?.name;
+    const action=name ? actions[name] : null;
+    if(action){ action.reset().fadeIn(.35).play(); }
+    return ()=>{ if(action) action.fadeOut(.2); };
+  },[actions,animations]);
+  useFrame((state)=>{
+    if(!group.current) return;
+    group.current.rotation.y=THREE.MathUtils.lerp(group.current.rotation.y,state.pointer.x*.22,.045);
+    group.current.rotation.x=THREE.MathUtils.lerp(group.current.rotation.x,-state.pointer.y*.08,.045);
+    group.current.position.y=-1.55+Math.sin(state.clock.elapsedTime*.75)*.018;
+  });
+  return <primitive ref={group} object={scene} scale={1.8}/>;
+}
+useGLTF.preload('/model.glb');
+
+class ModelErrorBoundary extends React.Component{
+  constructor(props){super(props);this.state={failed:false}}
+  static getDerivedStateFromError(){return {failed:true}}
+  render(){return this.state.failed ? this.props.fallback : this.props.children}
+}
+
 function AvatarStage(){
   const [pulse,setPulse]=useState(false);
   const [tilt,setTilt]=useState({x:0,y:0});
+  const [modelReady,setModelReady]=useState(false);
+  useEffect(()=>{
+    let live=true;
+    fetch('/model.glb',{method:'HEAD'}).then(r=>{if(live)setModelReady(r.ok)}).catch(()=>{if(live)setModelReady(false)});
+    return ()=>{live=false};
+  },[]);
   const move=e=>{
     const r=e.currentTarget.getBoundingClientRect();
-    const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
-    setTilt({x:py*-6,y:px*8});
+    const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
+    setTilt({x:py*-5,y:px*7});
   };
   return <div className={"avatar-stage "+(pulse?'is-pulsed':'')} onPointerMove={move} onPointerLeave={()=>setTilt({x:0,y:0})}>
     <div className="avatar-backdrop"/>
     <div className="avatar-gridlines"/>
-    <div className="avatar-photo-wrap" style={{transform:`perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(0)`}}>
-      <img className="avatar-media" src="/avatar-standing.webp" alt="Pranav Mahajan standing avatar"/>
+    <div className="avatar-photo-wrap" style={{transform:`perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`}}>
+      <ModelErrorBoundary fallback={<img className="avatar-media" src="/avatar-standing.webp" alt="Pranav Mahajan standing avatar"/>}>
+        {modelReady ? <Canvas className="avatar-canvas" camera={{position:[0,.05,4.7],fov:34}} dpr={[1,1.4]} gl={{alpha:true,antialias:true}}>
+          <ambientLight intensity={1.5}/>
+          <directionalLight position={[2,4,4]} intensity={2.5}/>
+          <directionalLight position={[-3,1,2]} intensity={1.2} color="#b8ff50"/>
+          <Environment preset="city"/>
+          <Suspense fallback={null}><AvatarModel/><ContactShadows position={[0,-1.62,0]} opacity={.32} scale={3.2} blur={2.4} far={4}/></Suspense>
+          <OrbitControls enableZoom={false} enablePan={false} enableRotate={false}/>
+        </Canvas> : <img className="avatar-media" src="/avatar-standing.webp" alt="Pranav Mahajan standing avatar"/>}
+      </ModelErrorBoundary>
       <div className="avatar-vignette"/>
       <div className="avatar-floor-glow"/>
     </div>
     <div className="avatar-ui">
       <button type="button" onClick={()=>setPulse(v=>!v)} className="avatar-button">{pulse?'RESET AVATAR':'INTERACT WITH AVATAR'} <span>↗</span></button>
-      <div className="avatar-status"><b>01</b><span>LIVE STANCE</span><i/></div>
+      <div className="avatar-status"><b>01</b><span>{modelReady?'LIVE 3D IDLE':'LIVE STANCE'}</span><i/></div>
     </div>
     <div className="avatar-label label-a">MOVE / TILT</div>
-    <div className="avatar-label label-b">REAL-TIME PARALLAX</div>
-    <div className="avatar-corner">PM-01 / INTERACTIVE PORTRAIT</div>
+    <div className="avatar-label label-b">YOUR MODEL · YOUR FACE</div>
+    <div className="avatar-corner">PM-01 / INTERACTIVE AVATAR</div>
   </div>
 }
 

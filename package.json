@@ -1,20 +1,20 @@
 {
   "name": "pranavportfolio",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "scripts": {
     "dev": "vite --port 4000",
     "build": "vite build",
     "preview": "vite preview --port 4000"
   },
   "dependencies": {
-    "@testsprite/testsprite-mcp": "^0.0.18",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
-    "firebase": "^12.6.0",
     "framer-motion": "^10.16.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.3"
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "^8.17.10",
+    "three": "^0.169.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
