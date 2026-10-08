@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo, useRef, useState } from 'react';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Html, Sparkles } from '@react-three/drei';
+import { Float, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import './styles.css';
 
@@ -49,9 +49,6 @@ function Scene(){
           <torusGeometry args={[1.84,.008,16,96]}/>
           <meshBasicMaterial color="#a58aff" transparent opacity={.25}/>
         </mesh>
-        <Html center transform distanceFactor={4.6} position={[0,-.15,0]} style={{pointerEvents:'none'}}>
-          <img className="avatar-media" src="/avatar.webp" alt="Pranav Mahajan avatar in T-pose"/>
-        </Html>
       </group>
     </Float>
   </>;
@@ -59,15 +56,25 @@ function Scene(){
 
 function AvatarStage(){
   const [pulse,setPulse]=useState(false);
-  return <div className={"avatar-stage "+(pulse?'is-pulsed':'')}>
-    <Canvas camera={{position:[0,0,4.7],fov:36}} dpr={[1,1.5]} gl={{alpha:true,antialias:true}}>
+  const [tilt,setTilt]=useState({x:0,y:0});
+  const move=e=>{
+    const r=e.currentTarget.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
+    setTilt({x:py*-7,y:px*9});
+  };
+  return <div className={"avatar-stage "+(pulse?'is-pulsed':'')} onPointerMove={move} onPointerLeave={()=>setTilt({x:0,y:0})}>
+    <Canvas className="avatar-canvas" camera={{position:[0,0,4.7],fov:36}} dpr={[1,1.5]} gl={{alpha:true,antialias:true}}>
       <Suspense fallback={null}><Scene/></Suspense>
     </Canvas>
+    <motion.div className="avatar-visual" animate={{rotateX:tilt.x,rotateY:tilt.y,y:[0,-7,0]}} transition={{rotateX:{duration:.18},rotateY:{duration:.18},y:{duration:4,repeat:Infinity,ease:'easeInOut'}}} style={{transformPerspective:1000}}>
+      <img className="avatar-media" src="/avatar.webp" alt="Pranav Mahajan animated avatar in T-pose"/>
+      <div className="avatar-shadow"/>
+    </motion.div>
     <div className="avatar-ui">
       <button type="button" onClick={()=>setPulse(v=>!v)} className="avatar-button">{pulse?'RESET AVATAR':'INTERACT WITH AVATAR'} <span>↗</span></button>
       <div className="avatar-status"><b>01</b><span>LIVE T-POSE</span><i/></div>
     </div>
-    <div className="avatar-label label-a">DRAG / LOOK</div>
+    <div className="avatar-label label-a">MOVE YOUR CURSOR</div>
     <div className="avatar-label label-b">AI × HUMAN</div>
     <div className="avatar-scan"/>
   </div>
