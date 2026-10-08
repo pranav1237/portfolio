@@ -1,429 +1,249 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import './styles.css';
-import { auth, signInWithGoogle, signOutUser, signInWithGoogleWithRecaptcha } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
 
-// Animated background elements
-function AnimatedBg() {
-	return (
-		<div className="animated-bg">
-			<motion.div className="orb orb-1" animate={{ y: [0, -20, 0] }} transition={{ duration: 8, repeat: Infinity }} />
-			<motion.div className="orb orb-2" animate={{ y: [0, 20, 0] }} transition={{ duration: 10, repeat: Infinity, delay: 1 }} />
-			<motion.div className="orb orb-3" animate={{ y: [0, -15, 0] }} transition={{ duration: 12, repeat: Infinity, delay: 2 }} />
-		</div>
-	);
+const skills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'Firebase', 'AI / ML', 'C++', 'Pandas', 'NumPy', 'Git'];
+
+const education = [
+  { title: 'B.Tech Software Engineering', school: 'Bennett University', meta: 'AI & ML · 2024 — ongoing' },
+  { title: 'CBSE Board', school: '12th Class (2024) · 10th Class (2022)', meta: '' }
+];
+
+const experience = [
+  { title: 'AI / ML Developer', place: 'Broskies Hub', meta: 'Internship' },
+  { title: 'Full-Stack Development', place: 'Academic & personal projects', meta: 'Project experience' }
+];
+
+function Background() {
+  return (
+    <div className="scene" aria-hidden="true">
+      <div className="noise" />
+      <div className="grid-plane" />
+      <div className="aurora aurora-one" />
+      <div className="aurora aurora-two" />
+      <div className="orbital orbital-one"><span /></div>
+      <div className="orbital orbital-two"><span /></div>
+    </div>
+  );
 }
 
-function Header({ user }) {
-	const [scrolled, setScrolled] = useState(false);
+function Header() {
+  const [scrolled, setScrolled] = useState(false);
 
-	useEffect(() => {
-		const handleScroll = () => setScrolled(window.scrollY > 50);
-		window.addEventListener('scroll', handleScroll);
-		return () => window.removeEventListener('scroll', handleScroll);
-	}, []);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-	return (
-		<motion.header className={`site-header ${scrolled ? 'scrolled' : ''}`} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-		<div className="brand">
-			{/* Animated/video logo: place `Portfolio.mp4` in `public/logo.mp4` so it is served at /logo.mp4 */}
-			<video className="logo-video" src="/logo.mp4" autoPlay muted loop playsInline poster="/logo-poster.png" />
-			<motion.div whileHover={{ scale: 1.05 }}>
-				<h1>✨ Pranav Mahajan</h1>
-				<p>Full‑Stack Developer | AI/ML Specialist | Web Developer</p>
-			</motion.div>
-		</div>
-		<div className="auth-area">
-			{user ? (
-				<>
-					<span className="user-name">{user.displayName || user.email}</span>
-					<button className="btn" onClick={() => signOutUser()}>Sign out</button>
-				</>
-			) : (
-				<button className="btn google" onClick={() => signInWithGoogle()}>
-					Sign in with Google
-				</button>
-			)}
-		</div>
-		</motion.header>
-	);
+  return (
+    <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
+      <a className="brand" href="#top" aria-label="Pranav Mahajan home">
+        <span className="brand-mark">PM</span>
+        <span>
+          <strong>Pranav Mahajan</strong>
+          <small>Software Engineer · AI/ML</small>
+        </span>
+      </a>
+      <nav className="nav" aria-label="Primary navigation">
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a className="nav-cta" href="/Pranav_Mahajan_Resume.docx">Resume ↗</a>
+      </nav>
+    </header>
+  );
 }
 
-function SignInView() {
-	const domain = typeof window !== 'undefined' ? window.location.hostname : '';
-
-	useEffect(() => {
-		// Expose a global callback name for the reCAPTCHA data-callback attribute.
-		// grecaptcha will call window.onRecaptchaSubmit(token)
-		window.onRecaptchaSubmit = async function (token) {
-			try {
-				await signInWithGoogleWithRecaptcha(token);
-			} catch (e) {
-				console.error('Sign-in with recaptcha failed:', e);
-				alert('Sign-in failed: ' + (e?.message || e));
-			}
-		};
-		return () => {
-			try { delete window.onRecaptchaSubmit; } catch (e) {}
-		};
-	}, []);
-
-	// If grecaptcha.enterprise is available we will use the g-recaptcha button attributes
-	// The markup below uses `data-sitekey` and `data-callback` per the reCAPTCHA docs.
-
-	return (
-		<div className="signin-page">
-			<div className="signin-card">
-				<h2>Sign in to view the portfolio</h2>
-				<p>Please verify you're human and sign in with Google to continue.</p>
-				<div style={{ marginBottom: 12, color: '#9aa3bd' }}>Detected domain: <strong>{domain}</strong></div>
-
-				<div className="signin-actions">
-					{/* Programmatically execute reCAPTCHA then perform Google sign-in */}
-					<SignInButton />
-				</div>
-
-				<p style={{ marginTop: 16, color: '#9aa3bd' }}>
-					Note: If the page reports repeated login prompts after long idle periods, ensure the domain above is listed in Firebase Authorized domains and that the project is using a stable custom domain. I set auth persistence to local to reduce repeated login prompts.
-				</p>
-			</div>
-		</div>
-	);
+function SectionHeading({ eyebrow, title, copy }) {
+  return (
+    <div className="section-heading">
+      <span className="eyebrow">{eyebrow}</span>
+      <h2>{title}</h2>
+      {copy && <p>{copy}</p>}
+    </div>
+  );
 }
 
-function RepoCard({ repo, index }) {
-	return (
-		<motion.a
-			href={repo.html_url}
-			target="_blank"
-			rel="noreferrer"
-			className="repo"
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: index * 0.1 }}
-			whileHover={{ scale: 1.05, y: -5 }}
-			whileTap={{ scale: 0.95 }}
-		>
-			<div className="repo-header">
-				<h3>{repo.name}</h3>
-				<span className="lang-badge">{repo.language || 'Unknown'}</span>
-			</div>
-			<p>{repo.description || 'No description'}</p>
-			<div className="repo-footer">
-				<span>⭐ {repo.stargazers_count}</span>
-				<span>🍴 {repo.forks_count}</span>
-			</div>
-		</motion.a>
-	);
+function Skill({ name, index }) {
+  return (
+    <motion.span
+      className="skill"
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay: index * 0.025, duration: 0.35 }}
+      whileHover={{ y: -4, rotateX: 8 }}
+    >
+      {name}
+    </motion.span>
+  );
 }
 
-function SkillBadge({ skill, index }) {
-	return (
-		<motion.div
-			className="skill-badge"
-			initial={{ opacity: 0, scale: 0 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ delay: index * 0.05 }}
-			whileHover={{ scale: 1.1, rotate: 5 }}
-		>
-			{skill}
-		</motion.div>
-	);
+function ProjectCard({ repo, index }) {
+  return (
+    <motion.a
+      className="project-card"
+      href={repo.html_url}
+      target="_blank"
+      rel="noreferrer"
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ delay: index * 0.06, duration: 0.55 }}
+      whileHover={{ y: -10, rotateX: 2, rotateY: index % 2 ? -1 : 1 }}
+    >
+      <div className="project-topline">
+        <span className="project-index">0{index + 1}</span>
+        <span className="project-arrow">↗</span>
+      </div>
+      <h3>{repo.name.replace(/[-_]/g, ' ')}</h3>
+      <p>{repo.description || 'A project exploring software, data, and intelligent systems.'}</p>
+      <div className="project-meta">
+        <span>{repo.language || 'Software'}</span>
+        <span>★ {repo.stargazers_count}</span>
+      </div>
+    </motion.a>
+  );
 }
 
 function ContactForm() {
-	const [email, setEmail] = useState('');
-	const [message, setMessage] = useState('');
-	const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState(false);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (email && message) {
-			console.log('Message:', { email, message });
-			setSent(true);
-			setEmail('');
-			setMessage('');
-			setTimeout(() => setSent(false), 3000);
-		}
-	};
+  const submit = (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const email = form.get('email');
+    const message = form.get('message');
+    window.location.href = `mailto:pranavmahajan.4122005@gmail.com?subject=Portfolio%20enquiry&body=${encodeURIComponent(`From: ${email}\n\n${message}`)}`;
+    setSent(true);
+  };
 
-	return (
-		<motion.form onSubmit={handleSubmit} className="contact-form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-			<input type="email" placeholder="Your email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-			<textarea placeholder="Your message" value={message} onChange={(e) => setMessage(e.target.value)} rows={4} required />
-			<motion.button type="submit" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn primary">
-				{sent ? '✅ Message Sent!' : '📬 Send Message'}
-			</motion.button>
-		</motion.form>
-	);
+  return (
+    <form className="contact-form glass-card" onSubmit={submit}>
+      <label>
+        Email
+        <input name="email" type="email" placeholder="you@company.com" required />
+      </label>
+      <label>
+        Message
+        <textarea name="message" rows="5" placeholder="Tell me what you're building..." required />
+      </label>
+      <button className="button button-primary" type="submit">{sent ? 'Opening email…' : 'Start a conversation →'}</button>
+    </form>
+  );
 }
 
 export default function Portfolio() {
-	const [repos, setRepos] = useState([]);
-	const [loading, setLoading] = useState(true);
-	const [user, setUser] = useState(undefined); // undefined = loading, null = not signed in
+  const [repos, setRepos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
 
-	useEffect(() => {
-		fetch('https://api.github.com/users/pranav1237/repos?sort=updated&per_page=12')
-			.then(r => r.json())
-			.then(data => {
-				if (Array.isArray(data)) setRepos(data);
-			})
-			.catch(() => {})
-			.finally(() => setLoading(false));
-	}, []);
+  useEffect(() => {
+    fetch('https://api.github.com/users/pranav1237/repos?sort=updated&per_page=8')
+      .then((response) => response.ok ? response.json() : [])
+      .then((data) => setRepos(Array.isArray(data) ? data : []))
+      .catch(() => setRepos([]))
+      .finally(() => setLoading(false));
+  }, []);
 
-	useEffect(() => {
-		const unsub = onAuthStateChanged(auth, (u) => {
-			setUser(u);
-		});
-		return () => unsub && unsub();
-	}, []);
+  return (
+    <div className="page" id="top">
+      <motion.div className="scroll-progress" style={{ scaleX: progress }} />
+      <Background />
+      <Header />
 
-	const skills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'Firebase', 'ML/AI', 'C++', 'Pandas', 'NumPy', 'Git'];
-	const education = [
-		{ title: 'B.Tech Software Engineering', school: 'Bennett University', year: '2024–ongoing', spec: 'AI & ML' },
-		{ title: 'CBSE Board', school: '12th Class (2024) | 10th Class (2022)', year: '', spec: '' }
-	];
+      <main>
+        <section className="hero">
+          <div className="hero-copy">
+            <div className="status-pill"><span /> Available for meaningful projects</div>
+            <p className="hero-kicker">SOFTWARE ENGINEERING × INTELLIGENT SYSTEMS</p>
+            <h1>Building digital experiences with <em>depth.</em></h1>
+            <p className="hero-lede">
+              I'm Pranav — a software engineering student focused on AI/ML and full-stack development.
+              I turn ambitious ideas into clean, useful products.
+            </p>
+            <div className="hero-actions">
+              <a className="button button-primary" href="#work">Explore my work <span>↓</span></a>
+              <a className="button button-ghost" href="mailto:pranavmahajan.4122005@gmail.com">Let's talk ↗</a>
+            </div>
+            <div className="hero-links">
+              <a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">GitHub ↗</a>
+              <a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" rel="noreferrer">LinkedIn ↗</a>
+              <span>Greater Noida · India</span>
+            </div>
+          </div>
 
-		// If auth state still loading, show nothing / loader
-		if (typeof user === 'undefined') {
-			return (
-				<div className="page">
-					<AnimatedBg />
-					<header />
-					<main>
-						<div className="loading-center">Checking authentication…</div>
-					</main>
-				</div>
-			);
-		}
+          <motion.div className="hero-object" initial={{ opacity: 0, scale: .82, rotate: -8 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}>
+            <div className="object-shadow" />
+            <div className="cube">
+              <div className="cube-face face-front">PM<span>01</span></div>
+              <div className="cube-face face-right">AI<span>02</span></div>
+              <div className="cube-face face-top">WEB<span>03</span></div>
+            </div>
+            <div className="orbit orbit-a" />
+            <div className="orbit orbit-b" />
+            <span className="floating-label label-one">REACT</span>
+            <span className="floating-label label-two">ML</span>
+            <span className="floating-label label-three">BUILD</span>
+          </motion.div>
+        </section>
 
-		// If not signed in, show the SignIn page
-		if (!user) {
-			return (
-				<div className="page">
-					<AnimatedBg />
-					<SignInView />
-				</div>
-			);
-		}
+        <section className="intro-strip">
+          <span>01 / SELECTED CAPABILITIES</span>
+          <p>From interfaces to intelligent systems, I care about the details that make technology feel effortless.</p>
+        </section>
 
-		return (
-			<div className="page">
-				<AnimatedBg />
-				<Header user={user} />
-				<main>
-				{/* Hero Section */}
-				<motion.section className="hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-					<div className="hero-content">
-						<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-							<h2>👋 Hello, I'm Pranav</h2>
-							<p className="subtitle">
-								B.Tech Software Engineering student specializing in AI/ML. I build scalable web applications, 
-								machine learning models, and innovative solutions that solve real-world problems.
-							</p>
-						</motion.div>
+        <section className="skills-section" id="skills">
+          <SectionHeading eyebrow="Capabilities" title="A practical stack, built to ship." copy="Tools I use to move from an idea to a working product." />
+          <div className="skills-grid">{skills.map((skill, i) => <Skill key={skill} name={skill} index={i} />)}</div>
+        </section>
 
-						<motion.div className="cta-buttons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-							<motion.a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" className="btn primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-								🔗 LinkedIn
-							</motion.a>
-							<motion.a href="https://github.com/pranav1237" target="_blank" className="btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-								🐙 GitHub
-							</motion.a>
-							<motion.a href="/Pranav_Mahajan_Resume.docx" className="btn outline" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-								📄 Resume
-							</motion.a>
-							<motion.a href="mailto:pranavmahajan.4122005@gmail.com" className="btn outline" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-								✉️ Email
-							</motion.a>
-						</motion.div>
+        <section className="work-section" id="work">
+          <SectionHeading eyebrow="Selected work" title="Projects with a point of view." copy="Live from my GitHub — the work evolves as I keep learning." />
+          {loading ? (
+            <div className="loading-grid">{[1, 2, 3].map((n) => <div className="skeleton" key={n} />)}</div>
+          ) : repos.length ? (
+            <div className="project-grid">{repos.map((repo, i) => <ProjectCard key={repo.id} repo={repo} index={i} />)}</div>
+          ) : (
+            <div className="empty-state">Projects are temporarily unavailable. <a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">Open GitHub ↗</a></div>
+          )}
+          <a className="text-link" href="https://github.com/pranav1237" target="_blank" rel="noreferrer">View all projects on GitHub <span>↗</span></a>
+        </section>
 
-						<motion.div className="hero-canvas" animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 60, ease: 'linear' }} />
-					</div>
-				</motion.section>
+        <section className="about-section" id="about">
+          <SectionHeading eyebrow="About me" title="Curious by default. Precise by choice." />
+          <div className="about-layout">
+            <div className="about-copy glass-card">
+              <p className="big-copy">I like building things that are technically thoughtful and genuinely easy to use.</p>
+              <p>I'm pursuing a B.Tech in Software Engineering at Bennett University with a specialization in Artificial Intelligence & Machine Learning. My work spans full-stack applications, data, and machine learning.</p>
+              <p>Outside the code, I'm driven by experimentation — finding a better interaction, a cleaner architecture, or a more useful way to solve a real problem.</p>
+            </div>
+            <div className="timeline">
+              <div className="timeline-card"><span>EDUCATION</span>{education.map((item) => <div className="timeline-item" key={item.title}><strong>{item.title}</strong><p>{item.school}</p><small>{item.meta}</small></div>)}</div>
+              <div className="timeline-card"><span>EXPERIENCE</span>{experience.map((item) => <div className="timeline-item" key={item.title}><strong>{item.title}</strong><p>{item.place}</p><small>{item.meta}</small></div>)}</div>
+            </div>
+          </div>
+        </section>
 
-				{/* Skills Section */}
-				<motion.section className="skills-section" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-					<h2>🛠️ Technical Skills</h2>
-					<div className="skills-grid">
-						{skills.map((skill, idx) => <SkillBadge key={skill} skill={skill} index={idx} />)}
-					</div>
-				</motion.section>
+        <section className="contact-section" id="contact">
+          <div className="contact-copy">
+            <span className="eyebrow">Have an idea?</span>
+            <h2>Let's make something <em>worth remembering.</em></h2>
+            <p>Open to internships, collaborations, product ideas, and conversations about AI, software, and the web.</p>
+            <a className="email-link" href="mailto:pranavmahajan.4122005@gmail.com">pranavmahajan.4122005@gmail.com ↗</a>
+          </div>
+          <ContactForm />
+        </section>
+      </main>
 
-				{/* Projects Section */}
-				<motion.section className="projects" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-					<h2>🚀 Featured Projects</h2>
-					{loading ? (
-						<motion.p animate={{ opacity: [0.5, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-							Loading projects…
-						</motion.p>
-					) : (
-						<div className="grid">
-							{repos.map((repo, idx) => <RepoCard key={repo.id} repo={repo} index={idx} />)}
-						</div>
-					)}
-					<motion.div className="see-more" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-						<a href="https://github.com/pranav1237" target="_blank" className="btn primary">
-							View All Projects on GitHub →
-						</a>
-					</motion.div>
-				</motion.section>
-
-				{/* About Section */}
-				<motion.section className="about" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-					<h2>📚 About Me</h2>
-					<div className="about-content">
-						<div className="about-text">
-							<p>
-								I'm a passionate developer driven by innovation and problem-solving. With a strong foundation in 
-								full-stack development and AI/ML, I create solutions that are both scalable and user-friendly.
-							</p>
-							<p>
-								Currently pursuing my B.Tech in Software Engineering at Bennett University with a specialization in 
-								Artificial Intelligence & Machine Learning. I've worked on diverse projects ranging from web applications 
-								to machine learning models.
-							</p>
-						</div>
-
-						<div className="about-grid">
-							<div className="about-card">
-								<h3>🎓 Education</h3>
-								{education.map((edu, idx) => (
-									<div key={idx} className="edu-item">
-										<strong>{edu.title}</strong>
-										<div>{edu.school}</div>
-										{edu.spec && <div className="spec">{edu.spec}</div>}
-									</div>
-								))}
-							</div>
-
-							<div className="about-card">
-								<h3>💼 Experience</h3>
-								<div className="exp-item">
-									<strong>AI/ML Developer</strong>
-									<div>Broskies Hub</div>
-									<div className="muted">Internship</div>
-								</div>
-								<div className="exp-item">
-									<strong>Full-Stack Development</strong>
-									<div>Multiple Projects</div>
-									<div className="muted">Academic & Personal</div>
-								</div>
-							</div>
-
-							<div className="about-card">
-								<h3>⭐ Key Achievements</h3>
-								<ul className="achievements">
-									<li>🏆 Participated in hackathons & competitions</li>
-									<li>🤖 Built ML models for fraud detection</li>
-									<li>🌐 Full-stack web applications</li>
-									<li>📊 Data analysis & visualization</li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				</motion.section>
-
-				{/* Contact Section */}
-				<motion.section className="contact" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-					<h2>💬 Get In Touch</h2>
-					<div className="contact-container">
-						<div className="contact-info">
-							<h3>Let's Connect!</h3>
-							<p>Interested in collaborating or have questions? Feel free to reach out!</p>
-							<div className="contact-links">
-							<a href="mailto:pranavmahajan.4122005@gmail.com" className="contact-link">
-								<span>📧</span> pranavmahajan.4122005@gmail.com
-							</a>
-							<a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" className="contact-link">
-								<span>🔗</span> LinkedIn Profile
-							</a>
-							<a href="https://github.com/pranav1237" target="_blank" className="contact-link">
-								<span>🐙</span> GitHub Profile
-							</a>
-							<div className="contact-link">
-								<span>📍</span> Greater Noida, India
-							</div>
-							</div>
-						</div>
-						<ContactForm />
-					</div>
-				</motion.section>
-
-				{/* CTA Section */}
-				<motion.section className="cta-final" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-					<h2>Ready to Start a Project?</h2>
-					<p>Let's build something amazing together!</p>
-					<motion.a href="mailto:pranavmahajan.4122005@gmail.com" className="btn primary large" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-						💌 Contact Me Today
-					</motion.a>
-				</motion.section>
-			</main>
-
-			{/* Footer */}
-			<footer>
-				<motion.div className="footer-content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-					<div>
-						<h4>Pranav Mahajan</h4>
-						<p>Full-Stack Developer | AI/ML Enthusiast</p>
-					</div>
-					<div className="footer-links">
-						<a href="https://github.com/pranav1237" target="_blank">🐙 GitHub</a>
-						<a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank">🔗 LinkedIn</a>
-						<a href="mailto:pranavmahajan.4122005@gmail.com">📧 Email</a>
-					</div>
-					<div>
-						<p>© {new Date().getFullYear()} Pranav Mahajan. All rights reserved.</p>
-						<p className="muted">Deployed on Vercel | Powered by React, Vite & Firebase</p>
-					</div>
-				</motion.div>
-			</footer>
-		</div>
-	);
-}
-
-function SignInButton() {
-	const [busy, setBusy] = useState(false);
-
-	const handleClick = async () => {
-		setBusy(true);
-		const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Le3hBosAAAAAAXviyuaKfyF6ZWHKRyW8rgLz0aK';
-		try {
-			// Prefer enterprise API if available
-			let token = null;
-			if (typeof window !== 'undefined' && window.grecaptcha) {
-				const gre = window.grecaptcha;
-				// Use enterprise.execute if present
-				if (gre.enterprise && typeof gre.enterprise.execute === 'function') {
-					token = await gre.enterprise.execute(siteKey, { action: 'login' });
-				} else if (typeof gre.execute === 'function') {
-					token = await gre.execute(siteKey, { action: 'login' });
-				}
-			}
-
-			if (!token) {
-				// If grecaptcha didn't return a token, inform the user and still try sign-in
-				alert('reCAPTCHA not ready. Please wait a moment and try again.');
-				setBusy(false);
-				return;
-			}
-
-			// Pass token to firebase helper which may log/verify server-side later
-			await signInWithGoogleWithRecaptcha(token);
-		} catch (e) {
-			console.error('Sign-in flow error', e);
-			alert('Sign-in failed: ' + (e?.message || e));
-		} finally {
-			setBusy(false);
-		}
-	};
-
-	return (
-		<button className="btn google" onClick={handleClick} disabled={busy} style={{ fontSize: 16 }}>
-			{busy ? 'Signing in…' : 'Sign in with Google'}
-		</button>
-	);
+      <footer>
+        <span>© {new Date().getFullYear()} Pranav Mahajan</span>
+        <span>Designed & built with React · Vite</span>
+        <a href="#top">Back to top ↑</a>
+      </footer>
+    </div>
+  );
 }
