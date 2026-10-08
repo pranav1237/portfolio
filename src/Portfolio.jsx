@@ -1,249 +1,83 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import './styles.css';
 
-const skills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'Firebase', 'AI / ML', 'C++', 'Pandas', 'NumPy', 'Git'];
-
-const education = [
-  { title: 'B.Tech Software Engineering', school: 'Bennett University', meta: 'AI & ML · 2024 — ongoing' },
-  { title: 'CBSE Board', school: '12th Class (2024) · 10th Class (2022)', meta: '' }
-];
+const AVATAR = "data:image/png;base64,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";
+const skills = ['Python','SQL','Java','C++','JavaScript','React','Node.js','Pandas','NumPy','Scikit-learn','Machine Learning','Agentic AI','LangChain','LangGraph','CrewAI','Power BI','Tableau','Excel','Git'];
 
 const experience = [
-  { title: 'AI / ML Developer', place: 'Broskies Hub', meta: 'Internship' },
-  { title: 'Full-Stack Development', place: 'Academic & personal projects', meta: 'Project experience' }
+  { role:'Data Analyst', company:'Bee Skilled', date:'September 2026 — Present', text:'Applying Python, SQL and Excel to real-world data analysis projects in a collaborative, cross-functional environment.', tags:['Python','SQL','Excel'] },
+  { role:'Machine Learning & AI Intern', company:'Skill Nexis', date:'September 2026 — Present', text:'Current ML and AI internship experience, focused on applying machine learning concepts and practical development skills.', tags:['ML','AI','Python'] },
+  { role:'Data Analyst · AI Agent Project', company:'Zetheta Algorithms Private Limited', date:'August 2026 — September 2026', text:'Worked on structured financial datasets for data-driven decision making, predictive modeling, and a Convexity Sensitivity AI Agent project.', tags:['Data Analytics','ML','AI'] },
+  { role:'Data Science with Python Apprentice Intern', company:'Yuva Intern by Henry Harvin', date:'June 2026 — July 2026', text:'Worked through the end-to-end data science workflow: data acquisition, cleaning, preprocessing, EDA, statistical testing, visualization and model evaluation.', tags:['Python','Pandas','Scikit-learn'] },
+  { role:'AI/ML Developer Intern', company:'BroskiesHub', date:'September 2025 — November 2025', text:'Designed and implemented AI/ML solutions for product development and collaborated with cross-functional teams to integrate models into software applications.', tags:['AI/ML','Software'] },
+  { role:'Software & Data Job Simulations', company:'Forage', date:'2025 — 2026', text:'Completed structured simulations across Wells Fargo, Y Combinator, Goldman Sachs, Commonwealth Bank, J.P. Morgan, Tata Group and Deloitte, covering software engineering, quantitative research, operations and data analytics.', tags:['Software','Analytics','FinTech'] }
 ];
 
-function Background() {
-  return (
-    <div className="scene" aria-hidden="true">
-      <div className="noise" />
-      <div className="grid-plane" />
-      <div className="aurora aurora-one" />
-      <div className="aurora aurora-two" />
-      <div className="orbital orbital-one"><span /></div>
-      <div className="orbital orbital-two"><span /></div>
-    </div>
-  );
+const projects = [
+  {name:'EcoFinds', repo:'EcoFinds---Sustainable-Second-Hand-Marketplace', focus:'Full-stack marketplace concept for sustainable second-hand commerce.', stack:'Web · Product · Full Stack'},
+  {name:'Credit Card Fraud Detection', repo:'Credit-Card-Fraud-Detection_Updated', focus:'Machine-learning project focused on identifying fraudulent transactions from financial data.', stack:'Python · ML · Data'},
+  {name:'CIFAR-10 Image Classification', repo:'CIFAR10_Image_Classification_with_CNN', focus:'Computer-vision project using a CNN to classify images across the CIFAR-10 dataset.', stack:'Python · CNN · Deep Learning'},
+  {name:'Internship Recommender', repo:'Internship_recommender', focus:'Recommendation-focused ML project for matching users with relevant internship opportunities.', stack:'Python · Recommendation'},
+  {name:'Movie Recommendation System', repo:'movie-recommendation-system', focus:'Recommendation-system project exploring personalized movie suggestions.', stack:'Python · ML · Recommendation'},
+  {name:'Hospital Management System', repo:'Hospital_Management_System', focus:'Software project centered on managing hospital records and operational workflows.', stack:'Java · Software'}
+];
+
+function Header(){
+  return <header className="site-header">
+    <a className="brand" href="#top"><span className="brand-mark">PM</span><span><strong>Pranav Mahajan</strong><small>AI/ML · Data · Software</small></span></a>
+    <nav><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#about">About</a><a href="#contact">Contact</a><a className="nav-cta" href="/Pranav_Mahajan_Resume.docx">Resume ↗</a></nav>
+  </header>;
 }
 
-function Header() {
-  const [scrolled, setScrolled] = useState(false);
+function SectionHeading({eyebrow,title,copy}){ return <div className="section-heading"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2>{copy&&<p>{copy}</p>}</div>; }
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  return (
-    <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
-      <a className="brand" href="#top" aria-label="Pranav Mahajan home">
-        <span className="brand-mark">PM</span>
-        <span>
-          <strong>Pranav Mahajan</strong>
-          <small>Software Engineer · AI/ML</small>
-        </span>
-      </a>
-      <nav className="nav" aria-label="Primary navigation">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-        <a className="nav-cta" href="/Pranav_Mahajan_Resume.docx">Resume ↗</a>
-      </nav>
-    </header>
-  );
+function AvatarStage(){
+  const [tilt,setTilt]=useState({x:0,y:0});
+  const move=e=>{const r=e.currentTarget.getBoundingClientRect(); setTilt({x:((e.clientY-r.top)/r.height-.5)*-8,y:((e.clientX-r.left)/r.width-.5)*10});};
+  return <div className="avatar-stage" onPointerMove={move} onPointerLeave={()=>setTilt({x:0,y:0})}>
+    <div className="avatar-halo"/><div className="avatar-orbit orbit-a"/><div className="avatar-orbit orbit-b"/>
+    <motion.div className="avatar-card" animate={{rotateX:tilt.x,rotateY:tilt.y,y:[0,-10,0]}} transition={{rotateX:{duration:.2},rotateY:{duration:.2},y:{duration:5,repeat:Infinity,ease:'easeInOut'}}}>
+      <div className="avatar-glass"><img src={AVATAR} alt="Pranav Mahajan avatar" /></div>
+    </motion.div>
+    <span className="avatar-tag tag-ai">AI / ML</span><span className="avatar-tag tag-data">DATA</span><span className="avatar-tag tag-build">BUILD</span>
+    <div className="avatar-caption"><strong>Interactive profile</strong><span>Move your pointer around the avatar</span></div>
+  </div>;
 }
 
-function SectionHeading({ eyebrow, title, copy }) {
-  return (
-    <div className="section-heading">
-      <span className="eyebrow">{eyebrow}</span>
-      <h2>{title}</h2>
-      {copy && <p>{copy}</p>}
-    </div>
-  );
-}
+function ExperienceCard({item,index}){ return <motion.article className="experience-card" initial={{opacity:0,y:22}} whileInView={{opacity:1,y:0}} viewport={{once:true,margin:'-60px'}} transition={{delay:index*.05,duration:.45}}><div className="experience-marker">{String(index+1).padStart(2,'0')}</div><div className="experience-main"><div className="experience-top"><span>{item.date}</span><span>{item.company}</span></div><h3>{item.role}</h3><p>{item.text}</p><div className="tag-row">{item.tags.map(t=><span key={t}>{t}</span>)}</div></div></motion.article>; }
 
-function Skill({ name, index }) {
-  return (
-    <motion.span
-      className="skill"
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ delay: index * 0.025, duration: 0.35 }}
-      whileHover={{ y: -4, rotateX: 8 }}
-    >
-      {name}
-    </motion.span>
-  );
-}
+function ProjectCard({project,index}){ const url=`https://github.com/pranav1237/${project.repo}`; return <motion.a className="project-card" href={url} target="_blank" rel="noreferrer" initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true,margin:'-60px'}} transition={{delay:index*.05,duration:.45}} whileHover={{y:-8}}><div className="project-topline"><span>0{index+1}</span><span>GitHub ↗</span></div><div><h3>{project.name}</h3><p>{project.focus}</p></div><div className="project-meta"><span>{project.stack}</span><span>View project</span></div></motion.a>; }
 
-function ProjectCard({ repo, index }) {
-  return (
-    <motion.a
-      className="project-card"
-      href={repo.html_url}
-      target="_blank"
-      rel="noreferrer"
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ delay: index * 0.06, duration: 0.55 }}
-      whileHover={{ y: -10, rotateX: 2, rotateY: index % 2 ? -1 : 1 }}
-    >
-      <div className="project-topline">
-        <span className="project-index">0{index + 1}</span>
-        <span className="project-arrow">↗</span>
-      </div>
-      <h3>{repo.name.replace(/[-_]/g, ' ')}</h3>
-      <p>{repo.description || 'A project exploring software, data, and intelligent systems.'}</p>
-      <div className="project-meta">
-        <span>{repo.language || 'Software'}</span>
-        <span>★ {repo.stargazers_count}</span>
-      </div>
-    </motion.a>
-  );
-}
+export default function Portfolio(){
+  const {scrollYProgress}=useScroll(); const progress=useSpring(scrollYProgress,{stiffness:120,damping:30,restDelta:.001});
+  return <div className="page" id="top"><motion.div className="scroll-progress" style={{scaleX:progress}}/><Header/>
+    <main>
+      <section className="hero">
+        <div className="hero-copy">
+          <div className="status-pill"><span/> Open to internships & meaningful projects</div>
+          <p className="hero-kicker">AI / ML × DATA × SOFTWARE ENGINEERING</p>
+          <h1>Pranav Mahajan — <em>building with purpose.</em></h1>
+          <p className="hero-lede">Computer Science & Engineering student at Bennett University, focused on AI/ML, data analytics and software development. I turn technical ideas into practical, understandable products.</p>
+          <div className="hero-actions"><a className="button button-primary" href="#experience">See my experience ↓</a><a className="button button-ghost" href="#work">View projects ↗</a></div>
+          <div className="hero-links"><a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" rel="noreferrer">LinkedIn ↗</a><span>Greater Delhi Area · India</span></div>
+          <div className="recruiter-snapshot"><div><strong>AI / ML</strong><span>Model building & intelligent systems</span></div><div><strong>Data</strong><span>Analysis, visualization & insight</span></div><div><strong>Software</strong><span>Web apps & practical engineering</span></div></div>
+        </div>
+        <AvatarStage/>
+      </section>
 
-function ContactForm() {
-  const [sent, setSent] = useState(false);
+      <section className="intro-strip"><span>01 / RECRUITER SNAPSHOT</span><p>One page, one story: what I do, where I’ve worked, what I’ve built, and the technologies behind it.</p></section>
 
-  const submit = (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const email = form.get('email');
-    const message = form.get('message');
-    window.location.href = `mailto:pranavmahajan.4122005@gmail.com?subject=Portfolio%20enquiry&body=${encodeURIComponent(`From: ${email}\n\n${message}`)}`;
-    setSent(true);
-  };
+      <section className="experience-section" id="experience"><SectionHeading eyebrow="Experience" title="What I’ve actually worked on." copy="Professional internships, project work and structured industry simulations — presented with enough context to understand the role, not just the title."/><div className="experience-list">{experience.map((item,i)=><ExperienceCard item={item} index={i} key={item.role+item.company}/>)}</div></section>
 
-  return (
-    <form className="contact-form glass-card" onSubmit={submit}>
-      <label>
-        Email
-        <input name="email" type="email" placeholder="you@company.com" required />
-      </label>
-      <label>
-        Message
-        <textarea name="message" rows="5" placeholder="Tell me what you're building..." required />
-      </label>
-      <button className="button button-primary" type="submit">{sent ? 'Opening email…' : 'Start a conversation →'}</button>
-    </form>
-  );
-}
+      <section className="work-section" id="work"><SectionHeading eyebrow="Selected projects" title="Proof of what I build." copy="A focused selection from my GitHub, with the problem area and technical direction visible before you open the repository."/><div className="project-grid">{projects.map((p,i)=><ProjectCard project={p} index={i} key={p.name}/>)}</div><a className="text-link" href="https://github.com/pranav1237" target="_blank" rel="noreferrer">View all repositories on GitHub ↗</a></section>
 
-export default function Portfolio() {
-  const [repos, setRepos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { scrollYProgress } = useScroll();
-  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
+      <section className="skills-section" id="skills"><SectionHeading eyebrow="Toolkit" title="Technologies I work with." copy="A practical mix across programming, data, machine learning, AI and product development."/><div className="skills-grid">{skills.map((s,i)=><motion.span className="skill" key={s} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true,margin:'-30px'}} transition={{delay:i*.02}} whileHover={{y:-4,rotateX:7}}>{s}</motion.span>)}</div></section>
 
-  useEffect(() => {
-    fetch('https://api.github.com/users/pranav1237/repos?sort=updated&per_page=8')
-      .then((response) => response.ok ? response.json() : [])
-      .then((data) => setRepos(Array.isArray(data) ? data : []))
-      .catch(() => setRepos([]))
-      .finally(() => setLoading(false));
-  }, []);
+      <section className="about-section" id="about"><SectionHeading eyebrow="About" title="A clear path from data to product."/><div className="about-layout"><div className="about-copy glass-card"><p className="big-copy">I’m interested in the space where data, AI and software engineering meet.</p><p>I’m pursuing a B.Tech in Computer Science & Engineering with an AI/ML specialization at Bennett University. My experience includes data analysis, machine learning, AI/ML development and software-oriented projects.</p><p>I care about explaining the work as clearly as I build it — what the problem is, what I did, which tools I used, and where the result fits.</p></div><div className="timeline"><div className="timeline-card"><span>EDUCATION</span><div className="timeline-item"><strong>Bennett University</strong><p>Bachelor of Technology — Computer Science & Engineering</p><small>2024 — Present · AI / ML</small></div><div className="timeline-item"><strong>Shiv Jyoti International School</strong><p>Class XII · Science (PCM)</p><small>April 2023 — May 2024</small></div></div><div className="timeline-card"><span>CERTIFICATION FOCUS</span><div className="timeline-item"><strong>Data & AI foundations</strong><p>Data science, statistics, data preparation, LLMs, RAG and prompt engineering.</p><small>Google · IBM · Anthropic learning ecosystem</small></div></div></div></div></section>
 
-  return (
-    <div className="page" id="top">
-      <motion.div className="scroll-progress" style={{ scaleX: progress }} />
-      <Background />
-      <Header />
-
-      <main>
-        <section className="hero">
-          <div className="hero-copy">
-            <div className="status-pill"><span /> Available for meaningful projects</div>
-            <p className="hero-kicker">SOFTWARE ENGINEERING × INTELLIGENT SYSTEMS</p>
-            <h1>Building digital experiences with <em>depth.</em></h1>
-            <p className="hero-lede">
-              I'm Pranav — a software engineering student focused on AI/ML and full-stack development.
-              I turn ambitious ideas into clean, useful products.
-            </p>
-            <div className="hero-actions">
-              <a className="button button-primary" href="#work">Explore my work <span>↓</span></a>
-              <a className="button button-ghost" href="mailto:pranavmahajan.4122005@gmail.com">Let's talk ↗</a>
-            </div>
-            <div className="hero-links">
-              <a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">GitHub ↗</a>
-              <a href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" rel="noreferrer">LinkedIn ↗</a>
-              <span>Greater Noida · India</span>
-            </div>
-          </div>
-
-          <motion.div className="hero-object" initial={{ opacity: 0, scale: .82, rotate: -8 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}>
-            <div className="object-shadow" />
-            <div className="cube">
-              <div className="cube-face face-front">PM<span>01</span></div>
-              <div className="cube-face face-right">AI<span>02</span></div>
-              <div className="cube-face face-top">WEB<span>03</span></div>
-            </div>
-            <div className="orbit orbit-a" />
-            <div className="orbit orbit-b" />
-            <span className="floating-label label-one">REACT</span>
-            <span className="floating-label label-two">ML</span>
-            <span className="floating-label label-three">BUILD</span>
-          </motion.div>
-        </section>
-
-        <section className="intro-strip">
-          <span>01 / SELECTED CAPABILITIES</span>
-          <p>From interfaces to intelligent systems, I care about the details that make technology feel effortless.</p>
-        </section>
-
-        <section className="skills-section" id="skills">
-          <SectionHeading eyebrow="Capabilities" title="A practical stack, built to ship." copy="Tools I use to move from an idea to a working product." />
-          <div className="skills-grid">{skills.map((skill, i) => <Skill key={skill} name={skill} index={i} />)}</div>
-        </section>
-
-        <section className="work-section" id="work">
-          <SectionHeading eyebrow="Selected work" title="Projects with a point of view." copy="Live from my GitHub — the work evolves as I keep learning." />
-          {loading ? (
-            <div className="loading-grid">{[1, 2, 3].map((n) => <div className="skeleton" key={n} />)}</div>
-          ) : repos.length ? (
-            <div className="project-grid">{repos.map((repo, i) => <ProjectCard key={repo.id} repo={repo} index={i} />)}</div>
-          ) : (
-            <div className="empty-state">Projects are temporarily unavailable. <a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">Open GitHub ↗</a></div>
-          )}
-          <a className="text-link" href="https://github.com/pranav1237" target="_blank" rel="noreferrer">View all projects on GitHub <span>↗</span></a>
-        </section>
-
-        <section className="about-section" id="about">
-          <SectionHeading eyebrow="About me" title="Curious by default. Precise by choice." />
-          <div className="about-layout">
-            <div className="about-copy glass-card">
-              <p className="big-copy">I like building things that are technically thoughtful and genuinely easy to use.</p>
-              <p>I'm pursuing a B.Tech in Software Engineering at Bennett University with a specialization in Artificial Intelligence & Machine Learning. My work spans full-stack applications, data, and machine learning.</p>
-              <p>Outside the code, I'm driven by experimentation — finding a better interaction, a cleaner architecture, or a more useful way to solve a real problem.</p>
-            </div>
-            <div className="timeline">
-              <div className="timeline-card"><span>EDUCATION</span>{education.map((item) => <div className="timeline-item" key={item.title}><strong>{item.title}</strong><p>{item.school}</p><small>{item.meta}</small></div>)}</div>
-              <div className="timeline-card"><span>EXPERIENCE</span>{experience.map((item) => <div className="timeline-item" key={item.title}><strong>{item.title}</strong><p>{item.place}</p><small>{item.meta}</small></div>)}</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="contact-section" id="contact">
-          <div className="contact-copy">
-            <span className="eyebrow">Have an idea?</span>
-            <h2>Let's make something <em>worth remembering.</em></h2>
-            <p>Open to internships, collaborations, product ideas, and conversations about AI, software, and the web.</p>
-            <a className="email-link" href="mailto:pranavmahajan.4122005@gmail.com">pranavmahajan.4122005@gmail.com ↗</a>
-          </div>
-          <ContactForm />
-        </section>
-      </main>
-
-      <footer>
-        <span>© {new Date().getFullYear()} Pranav Mahajan</span>
-        <span>Designed & built with React · Vite</span>
-        <a href="#top">Back to top ↑</a>
-      </footer>
-    </div>
-  );
+      <section className="contact-section" id="contact"><div className="contact-copy"><span className="eyebrow">Contact</span><h2>Have a role, project or idea? <em>Let’s talk.</em></h2><p>I’m currently open to internships and opportunities across software engineering, AI/ML and data analytics.</p><a className="email-link" href="mailto:pranavmahajan.4122005@gmail.com">pranavmahajan.4122005@gmail.com ↗</a></div><div className="contact-actions glass-card"><a className="button button-primary" href="mailto:pranavmahajan.4122005@gmail.com">Email me</a><a className="button button-ghost" href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" rel="noreferrer">Connect on LinkedIn ↗</a><a className="button button-ghost" href="/Pranav_Mahajan_Resume.docx">Open resume ↗</a></div></section>
+    </main>
+    <footer><span>© {new Date().getFullYear()} Pranav Mahajan</span><span>React · Vite · Framer Motion</span><a href="#top">Back to top ↑</a></footer>
+  </div>;
 }
