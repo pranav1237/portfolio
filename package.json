@@ -1,6 +1,6 @@
 {
   "name": "pranavportfolio",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "scripts": {
     "dev": "vite --port 4000",
     "build": "vite build",
@@ -14,7 +14,10 @@
     "framer-motion": "^10.16.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.3"
+    "react-router-dom": "^6.22.3",
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "^8.17.10",
+    "three": "^0.169.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
