@@ -36,15 +36,22 @@ function Header(){
 function SectionHeading({eyebrow,title,copy}){ return <div className="section-heading"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2>{copy&&<p>{copy}</p>}</div>; }
 
 function AvatarStage(){
-  return <div className="avatar-stage">
+  const [tilt,setTilt]=useState({x:0,y:0});
+  const move=e=>{const r=e.currentTarget.getBoundingClientRect();setTilt({x:((e.clientY-r.top)/r.height-.5)*-7,y:((e.clientX-r.left)/r.width-.5)*9});};
+  return <div className="avatar-stage" onPointerMove={move} onPointerLeave={()=>setTilt({x:0,y:0})}>
     <div className="avatar-halo"/><div className="avatar-orbit orbit-a"/><div className="avatar-orbit orbit-b"/>
-    <motion.div className="avatar-card" initial={{opacity:0,scale:.94,y:18}} animate={{opacity:1,scale:1,y:[0,-8,0]}} transition={{opacity:{duration:.6},scale:{duration:.6},y:{duration:5,repeat:Infinity,ease:'easeInOut'}}}>
+    <motion.div className="avatar-card" animate={{rotateX:tilt.x,rotateY:tilt.y,y:[0,-8,0]}} transition={{rotateX:{duration:.2},rotateY:{duration:.2},y:{duration:5,repeat:Infinity,ease:'easeInOut'}}}>
       <div className="avatar-glass">
-        <model-viewer className="avatar-model" src="/model.glb" alt="Interactive 3D avatar of Pranav Mahajan" camera-controls auto-rotate auto-rotate-delay="900" rotation-per-second="14deg" interaction-prompt="auto" disable-zoom shadow-intensity="0.9" exposure="1.05" environment-image="neutral"></model-viewer>
+        <div className="identity-avatar" aria-label="Interactive Pranav Mahajan avatar">
+          <div className="identity-grid"/>
+          <div className="identity-head"><span>PM</span></div>
+          <div className="identity-ring ring-one"/><div className="identity-ring ring-two"/>
+          <div className="identity-label"><span>PRANAV</span><strong>MAHAJAN</strong></div>
+        </div>
       </div>
     </motion.div>
     <span className="avatar-tag tag-ai">AI / ML</span><span className="avatar-tag tag-data">DATA</span><span className="avatar-tag tag-build">BUILD</span>
-    <div className="avatar-caption"><strong>Meet the builder</strong><span>Drag the avatar to explore it · scroll to move through the portfolio</span></div>
+    <div className="avatar-caption"><strong>Interactive profile</strong><span>Move around the card · explore the portfolio below</span></div>
   </div>;
 }
 
