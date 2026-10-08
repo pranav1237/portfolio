@@ -1,8 +1,5 @@
-import React, { Suspense, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sparkles } from '@react-three/drei';
-import * as THREE from 'three';
 import './styles.css';
 
 const skills=['Python','SQL','Java','C++','JavaScript','React','Node.js','Pandas','NumPy','Scikit-learn','Machine Learning','Agentic AI','LangChain','LangGraph','CrewAI','Power BI','Tableau','Excel','Git'];
@@ -24,32 +21,6 @@ const projects=[
 
 function Header(){return <header className="site-header"><a className="brand" href="#top"><span className="brand-mark">PM</span><span><strong>Pranav Mahajan</strong><small>AI/ML × DATA × SOFTWARE</small></span></a><nav><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#stack">Stack</a><a href="#contact">Contact</a><a className="nav-cta" href="/Pranav_Mahajan_Resume.docx">Resume ↗</a></nav></header>}
 
-function Scene(){
-  const rig=useRef();
-  useFrame(state=>{
-    if(!rig.current)return;
-    const tx=state.pointer.x*.18, ty=-state.pointer.y*.10;
-    rig.current.rotation.y=THREE.MathUtils.lerp(rig.current.rotation.y,tx,.05);
-    rig.current.rotation.x=THREE.MathUtils.lerp(rig.current.rotation.x,ty,.05);
-  });
-  return <>
-    <ambientLight intensity={1.35}/>
-    <directionalLight position={[2,4,3]} intensity={2.2}/>
-    <pointLight position={[-2,1,2]} intensity={2} color="#b8ff50"/>
-    <Sparkles count={55} scale={[4.8,5.8,3.6]} size={1.9} speed={.25} color="#b8ff50"/>
-    <group ref={rig}>
-      <mesh rotation={[Math.PI/2,0,0]} position={[0,-1.72,0]}>
-        <torusGeometry args={[1.52,.014,16,96]}/>
-        <meshBasicMaterial color="#b8ff50" transparent opacity={.33}/>
-      </mesh>
-      <mesh rotation={[Math.PI/2,0,0]} position={[0,-1.72,0]}>
-        <torusGeometry args={[1.82,.008,16,96]}/>
-        <meshBasicMaterial color="#a58aff" transparent opacity={.22}/>
-      </mesh>
-    </group>
-  </>;
-}
-
 function AvatarStage(){
   const [pulse,setPulse]=useState(false);
   const [tilt,setTilt]=useState({x:0,y:0});
@@ -59,21 +30,19 @@ function AvatarStage(){
     setTilt({x:py*-6,y:px*8});
   };
   return <div className={"avatar-stage "+(pulse?'is-pulsed':'')} onPointerMove={move} onPointerLeave={()=>setTilt({x:0,y:0})}>
-    <Canvas className="avatar-canvas" camera={{position:[0,0,4.7],fov:36}} dpr={[1,1.5]} gl={{alpha:true,antialias:true}}>
-      <Suspense fallback={null}><Scene/></Suspense>
-    </Canvas>
-    <motion.div className="avatar-photo-wrap" animate={{rotateX:tilt.x,rotateY:tilt.y,y:[0,-6,0]}} transition={{rotateX:{duration:.18},rotateY:{duration:.18},y:{duration:4,repeat:Infinity,ease:'easeInOut'}}} style={{transformPerspective:1000}}>
-      <div className="avatar-light"/>
-      <img className="avatar-media" src="/avatar-standing.webp" alt="Pranav Mahajan standing 3D avatar"/>
+    <div className="avatar-backdrop"/>
+    <div className="avatar-gridlines"/>
+    <div className="avatar-photo-wrap" style={{transform:`perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(0)`}}>
+      <img className="avatar-media" src="/avatar-standing.webp" alt="Pranav Mahajan standing avatar"/>
+      <div className="avatar-vignette"/>
       <div className="avatar-floor-glow"/>
-    </motion.div>
+    </div>
     <div className="avatar-ui">
       <button type="button" onClick={()=>setPulse(v=>!v)} className="avatar-button">{pulse?'RESET AVATAR':'INTERACT WITH AVATAR'} <span>↗</span></button>
       <div className="avatar-status"><b>01</b><span>LIVE STANCE</span><i/></div>
     </div>
     <div className="avatar-label label-a">MOVE / TILT</div>
-    <div className="avatar-label label-b">AI × HUMAN</div>
-    <div className="avatar-scan"/>
+    <div className="avatar-label label-b">REAL-TIME PARALLAX</div>
     <div className="avatar-corner">PM-01 / INTERACTIVE PORTRAIT</div>
   </div>
 }
@@ -112,10 +81,10 @@ export default function Portfolio(){
       </section>
       <section className="experience-section" id="experience"><SectionHeading kicker="01 / EXPERIENCE" title="Where I’ve been putting the skills to work." copy="Current internships first, then the strongest applied roles from the profile so a recruiter can scan the story fast."/><div className="experience-list">{experience.map((item,i)=><ExperienceCard key={item.company+item.role} item={item} index={i}/>)}</div></section>
       <section className="work-section" id="work"><SectionHeading kicker="02 / PROJECTS" title="Proof over promises." copy="A focused selection of ML, AI, recommendation and full-stack work from GitHub."/><div className="project-grid">{projects.map((p,i)=><ProjectCard key={p.name} project={p} index={i}/>)}</div><a className="outline-link" href="https://github.com/pranav1237" target="_blank" rel="noreferrer">See all GitHub repositories ↗</a></section>
-      <section className="stack-section" id="stack"><SectionHeading kicker="03 / STACK" title="The toolkit behind the build." copy="The frontend is backed by a modern React motion layer and an interactive 3D stage."/><div className="stack-wrap"><div className="stack-core"><span>R3F</span><b>REACT</b><b>THREE.JS</b><small>DREI · MOTION</small></div><div className="stack-pills">{skills.map((s,i)=><motion.span key={s} whileHover={{y:-5,rotate:i%2?1:-1}} initial={{opacity:0,scale:.94}} whileInView={{opacity:1,scale:1}} viewport={{once:true}} transition={{delay:i*.02}}>{s}</motion.span>)}</div></div></section>
+      <section className="stack-section" id="stack"><SectionHeading kicker="03 / STACK" title="The toolkit behind the build." copy="The frontend uses React, Framer Motion and a lightweight CSS 3D interaction layer built around the standing avatar."/><div className="stack-wrap"><div className="stack-core"><span>R3F</span><b>REACT</b><b>THREE.JS</b><small>DREI · MOTION</small></div><div className="stack-pills">{skills.map((s,i)=><motion.span key={s} whileHover={{y:-5,rotate:i%2?1:-1}} initial={{opacity:0,scale:.94}} whileInView={{opacity:1,scale:1}} viewport={{once:true}} transition={{delay:i*.02}}>{s}</motion.span>)}</div></div></section>
       <section className="about-section" id="about"><SectionHeading kicker="04 / ABOUT" title="A clear path from data to product."/><div className="about-grid"><div className="about-main"><p className="about-big">B.Tech CSE (AI/ML) at Bennett University. Curious about systems, serious about shipping.</p><p>My current work spans data analysis, machine learning, AI/ML development and software-oriented projects. I like building technically interesting work that people can actually use.</p></div><div className="about-panel"><span>EDUCATION</span><strong>Bennett University</strong><p>Bachelor of Technology — Computer Science & Engineering</p><small>2024 — Present · AI / ML</small><hr/><strong>Shiv Jyoti International School</strong><p>Class XII · Science (PCM)</p><small>2023 — 2024</small></div></div></section>
       <section className="contact-section" id="contact"><div><span className="contact-kicker">05 / CONTACT</span><h2>Let’s make something <em>worth opening.</em></h2><p>Open to internships and project opportunities across software engineering, AI/ML and data analytics.</p></div><div className="contact-actions"><a className="button button-primary" href="mailto:pranavmahajan.4122005@gmail.com">Email me ↗</a><a className="button button-ghost" href="https://www.linkedin.com/in/pranav-mahajan-673283323" target="_blank" rel="noreferrer">LinkedIn ↗</a><a className="button button-ghost" href="/Pranav_Mahajan_Resume.docx">Resume ↗</a></div></section>
     </main>
-    <footer><span>© {new Date().getFullYear()} Pranav Mahajan</span><span>React · R3F · Three.js · Framer Motion</span><a href="#top">Back to top ↑</a></footer>
+    <footer><span>© {new Date().getFullYear()} Pranav Mahajan</span><span>React · Framer Motion · CSS 3D</span><a href="#top">Back to top ↑</a></footer>
   </div>
 }
