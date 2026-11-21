@@ -24,7 +24,13 @@ const roles = [
   { title: 'Data Specialist · Job Simulation', company: 'Deloitte · Forage', start: '2025-08', end: '2025-09', description: 'Performed statistical analysis and data-driven decision-making on business datasets; built dashboards and visualizations with Tableau and Power BI and practiced data wrangling and feature engineering.', tags: ['Data Analytics','Tableau','Power BI','Statistics'] },
   { title: 'AI/ML Developer Intern', company: 'BroskiesHub', start: '2025-09', end: '2025-11', description: 'Designed and implemented AI/ML solutions for product development, collaborated with cross-functional teams to integrate models into software applications and contributed to workflow and risk-management improvements.', tags: ['AI/ML','Model Integration','Teamwork'] }
 ];
-const certificates = []; // Add verified credentials here; no certificates have been supplied yet.
+const certificates = [
+  { id: 'foundations-data-science', name: 'Foundations of Data Science', issuer: 'Issuer not specified on LinkedIn', date: 'Date not specified', category: 'DATA SCIENCE' },
+  { id: 'data-fundamentals', name: 'Data Fundamentals', issuer: 'Issuer not specified on LinkedIn', date: 'Date not specified', category: 'DATA' },
+  { id: 'prepare-data-exploration', name: 'Prepare Data for Exploration', issuer: 'Issuer not specified on LinkedIn', date: 'Date not specified', category: 'DATA ANALYTICS' },
+  { id: 'introduction-statistics', name: 'Introduction to Statistics', issuer: 'Issuer not specified on LinkedIn', date: 'Date not specified', category: 'STATISTICS' },
+  { id: 'analyze-data-answer-questions', name: 'Analyze Data to Answer Questions', issuer: 'Issuer not specified on LinkedIn', date: 'Date not specified', category: 'DATA ANALYTICS' }
+];
 const formatMonth = value => new Date(value + '-01T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 const roleIsCurrent = role => !role.end || new Date(role.end + '-01T00:00:00') > new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 const roleDate = role => `${formatMonth(role.start)} — ${roleIsCurrent(role) ? 'Present' : formatMonth(role.end)}`;
@@ -42,7 +48,7 @@ const formatUpdated = value => new Date(value).toLocaleDateString('en-US', { mon
 
 function Header({ light, setLight }) {
   const [open, setOpen] = useState(false);
-  const links = ['Experience','Projects','Stack','About','Contact'];
+  const links = ['Experience','Projects','Stack','About','Certificates','Contact'];
   return <header className="header">
     <a className="brand" href="#top" aria-label="Pranav Mahajan home">
       <b>PM</b><span>PRANAV MAHAJAN<small>AI/ML × DATA × SOFTWARE</small></span>
@@ -179,7 +185,7 @@ export default function Portfolio() {
       <Reveal id="about" className="section about"><header><span>05 / ABOUT</span><h2>A little context.</h2></header><div><h3>B.Tech · Computer Science & Engineering</h3><p>Bennett University · 2024 — Present · AI / ML</p><hr/><h3>Shiv Jyoti International School</h3><p>Class XII · Science (PCM) · 2023 — 2024</p><LinkedInConnection /></div></Reveal>
 
       <Reveal id="certificates" className="section"><header><span>06 / CERTIFICATIONS</span><h2>Proof of<br/><em>curiosity.</em></h2><p>Verified learning, credentials and milestones.</p></header>
-        {certificates.length ? <div className="certificate-grid">{certificates.map((certificate,i)=><article className="certificate" key={certificate.id || certificate.name}><span>0{i+1} / CREDENTIAL</span><h3>{certificate.name}</h3><p>{certificate.issuer} · {certificate.date}</p>{certificate.credentialUrl && <a href={certificate.credentialUrl} target="_blank" rel="noreferrer">VERIFY CREDENTIAL ↗</a>}{certificate.image && <a href={certificate.image} target="_blank" rel="noreferrer">VIEW CERTIFICATE ↗</a>}</article>)}</div> : <div className="certificate-empty"><span>YOUR NEXT MILESTONE</span><h3>Credentials coming soon.</h3><p>Your certificate gallery is ready. Add verified certificate details and images to the certificates data in <code>src/Portfolio.jsx</code> to publish them here. No credentials have been invented or added.</p><a href="mailto:pranavmahajan.4122005@gmail.com?subject=Portfolio%20certificates">SHARE CERTIFICATES ↗</a></div>}
+        {certificates.length ? <div className="certificate-grid">{certificates.map((certificate,i)=><article className="certificate" key={certificate.id || certificate.name}><span>0{i+1} / {certificate.category || 'CERTIFICATE'}</span><h3>{certificate.name}</h3><p>{certificate.issuer} · {certificate.date}</p>{certificate.credentialUrl && <a href={certificate.credentialUrl} target="_blank" rel="noreferrer">VERIFY CREDENTIAL ↗</a>}{certificate.image && <a href={certificate.image} target="_blank" rel="noreferrer">VIEW CERTIFICATE ↗</a>}</article>)}</div> : <div className="certificate-empty"><span>LEARNING & CREDENTIALS</span><h3>More certificates on the way.</h3><p>These five certificate titles are listed on your LinkedIn profile. Issuers, dates and verification links were not included in the profile text you shared, so they are intentionally left unverified.</p></div>}
       </Reveal>
 
       <Reveal id="contact" className="contact"><div><span>07 / CONTACT</span><h2>Let’s make<br/><em>something matter.</em></h2><p>Open to internships and project opportunities across software engineering, AI/ML and data analytics.</p></div><div className="contact-links"><a href="mailto:pranavmahajan.4122005@gmail.com">EMAIL ME <span>↗</span></a><a href="https://www.linkedin.com/in/pranavmahajan-673283323" target="_blank" rel="noreferrer">LINKEDIN <span>↗</span></a><a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a><a href="/Pranav_Mahajan_Resume.docx">RESUME <span>↗</span></a></div></Reveal>
