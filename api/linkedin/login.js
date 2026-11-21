@@ -2,8 +2,8 @@ import crypto from 'node:crypto';
 
 export default function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end('Method not allowed');
-  const { LINKEDIN_CLIENT_ID, LINKEDIN_REDIRECT_URI, LINKEDIN_SESSION_SECRET } = process.env;
-  if (!LINKEDIN_CLIENT_ID || !LINKEDIN_REDIRECT_URI || !LINKEDIN_SESSION_SECRET) {
+  const { LINKEDIN_CLIENT_ID, LINKEDIN_REDIRECT_URI, LINKEDIN_SESSION_SECRET, LINKEDIN_OWNER_EMAIL } = process.env;
+  if (!LINKEDIN_CLIENT_ID || !LINKEDIN_REDIRECT_URI || !LINKEDIN_SESSION_SECRET || !LINKEDIN_OWNER_EMAIL) {
     return res.status(503).send('LinkedIn is not configured yet. Add LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI and LINKEDIN_SESSION_SECRET in Vercel project environment variables, then redeploy.');
   }
   const state = crypto.randomBytes(32).toString('hex');
