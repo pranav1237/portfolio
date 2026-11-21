@@ -28,6 +28,13 @@ jobs:
         run: npm audit fix --no-fund
       - name: Audit all dependency severities
         run: npm audit --audit-level=low
+      - name: Save patched lockfile for repository update
+        uses: actions/upload-artifact@v4
+        with:
+          name: patched-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+          retention-days: 1
 
   production-build:
     name: Clean install and production build
