@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies and reconcile lockfile
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Apply non-breaking security updates
         run: npm audit fix --no-fund
       - name: Audit all dependency severities
@@ -52,6 +52,6 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Build production bundle
         run: npm run build
