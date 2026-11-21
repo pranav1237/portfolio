@@ -78,13 +78,17 @@ function useSafeReveal() {
     }
 
     let observer;
-    const fallback = window.setTimeout(() => setVisible(true), 4000);
+    let receivedObserverCallback = false;
+    const fallback = window.setTimeout(() => {
+      if (!receivedObserverCallback) setVisible(true);
+    }, 4000);
     try {
       observer = new window.IntersectionObserver(entries => {
+        receivedObserverCallback = true;
+        window.clearTimeout(fallback);
         if (entries.some(entry => entry.isIntersecting)) {
           setVisible(true);
           observer.disconnect();
-          window.clearTimeout(fallback);
         }
       }, { threshold: 0, rootMargin: '0px 0px -4% 0px' });
       observer.observe(node);
