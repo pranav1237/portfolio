@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion';
 import './styles.css';
 
 const portrait = '/WhatsApp%20Image%202026-11-21%20at%2012.17.19.jpeg';
@@ -62,7 +61,7 @@ function Header({ light, setLight }) {
 }
 
 function Reveal({ children, className = '', id }) {
-  return <motion.section id={id} className={className} initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.section>;
+  return <section id={id} className={className}>{children}</section>;
 }
 
 function LinkedInConnection() {
@@ -75,8 +74,6 @@ function LinkedInConnection() {
 }
 
 export default function Portfolio() {
-  const { scrollYProgress } = useScroll();
-  const scale = useSpring(scrollYProgress, { stiffness: 140, damping: 28 });
   const [filter, setFilter] = useState('ALL');
   const [light, setLight] = useState(false);
   const [liveProjects, setLiveProjects] = useState([]);
@@ -106,23 +103,22 @@ export default function Portfolio() {
   const visibleProjects = projectItems.filter(p => filter === 'ALL' || categoryFor(p) === filter);
 
   return <div className={light ? 'page light-theme' : 'page'} id="top">
-    <motion.div className="progress" style={{ scaleX: scale }} />
     <Header light={light} setLight={setLight} />
     <main>
       <section className="hero">
-        <motion.div className="hero-copy" initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
+        <div className="hero-copy">
           <span className="eyebrow"><i className="status-dot" /> PRANAV MAHAJAN <i>OPEN TO OPPORTUNITIES</i></span>
           <small className="kicker">AI / ML × DATA × SOFTWARE ENGINEERING</small>
           <h1>Curious mind.<br/><em>Clear intent.</em></h1>
           <p>Computer Science & Engineering student at Bennett University, exploring AI/ML, data analytics and software. I like building technically interesting work that people can actually use.</p>
           <div className="actions"><a className="primary" href="#projects">Explore my work <span>↘</span></a><a className="secondary" href="#contact">Get in touch <span>↗</span></a></div>
           <div className="meta">GREATER DELHI AREA · INDIA　 /　 PYTHON · SQL · AGENTIC AI</div>
-        </motion.div>
-        <motion.div className="portrait" initial={{ opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: .15 }}>
+        </div>
+        <div className="portrait">
           <img src={portrait} alt="Portrait of Pranav Mahajan" fetchPriority="high"/>
           <span>PORTRAIT / 001</span><small>COMPUTER SCIENCE & ENGINEERING</small>
           <div className="portrait-mark">PM<span>— 01</span></div>
-        </motion.div>
+        </div>
       </section>
 
       <div className="ticker" aria-label="Technology toolkit">{[...skills,...skills].map((s,i)=><span key={i}>{s}　✳　</span>)}</div>
@@ -131,7 +127,7 @@ export default function Portfolio() {
 
       <Reveal id="experience" className="section">
         <header><span>02 / EXPERIENCE</span><h2>Putting skills<br/><em>to work.</em></h2><p>A snapshot of internships and applied experience.</p></header>
-        <div className="roles">{roles.map((r,i)=><motion.article className="role" key={`${r.company}-${r.title}-${r.start}`} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * .07 }}><small>0{i+1}</small><div><label>{roleDate(r)}　·　{r.company} <span className={roleIsCurrent(r) ? 'role-status current' : 'role-status'}>{roleIsCurrent(r) ? 'CURRENT' : 'COMPLETED'}</span></label><h3>{r.title}</h3><p>{r.description}</p><div className="tags">{r.tags.map(t=><span key={t}>{t}</span>)}</div></div><b aria-hidden="true">↗</b></motion.article>)}</div>
+        <div className="roles">{roles.map((r,i)=><article className="role" key={`${r.company}-${r.title}-${r.start}`}><small>0{i+1}</small><div><label>{roleDate(r)}　·　{r.company} <span className={roleIsCurrent(r) ? 'role-status current' : 'role-status'}>{roleIsCurrent(r) ? 'CURRENT' : 'COMPLETED'}</span></label><h3>{r.title}</h3><p>{r.description}</p><div className="tags">{r.tags.map(t=><span key={t}>{t}</span>)}</div></div><b aria-hidden="true">↗</b></article>)}</div>
       </Reveal>
 
       <Reveal id="projects" className="section">
@@ -140,7 +136,7 @@ export default function Portfolio() {
         <div className="project-count">{String(visibleProjects.length).padStart(2,'0')} PROJECTS / {liveProjects.length ? 'LIVE FROM GITHUB' : 'FEATURED PROJECTS'}{projectsUpdatedAt && <span> · SYNCED {formatUpdated(projectsUpdatedAt)}</span>}</div>
         {projectsError && <p className="sync-note">Live GitHub sync is temporarily unavailable. Showing the featured project list instead.</p>}
         {projectsLoading && !liveProjects.length && <p className="sync-note">Connecting to GitHub and loading your latest repositories…</p>}
-        <motion.div layout className="projects"><AnimatePresence mode="popLayout">{visibleProjects.map((p,i)=><motion.a layout initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .25 }} whileHover={{ y: -5 }} className="project" key={p.id} href={p.url} target="_blank" rel="noreferrer"><div className="project-top"><span>{String(i+1).padStart(2,'0')} / {p.language || 'PROJECT'}</span><b>↗</b></div><label>{categoryFor(p)}</label><h3>{p.title}</h3><p>{p.description}</p><footer><span>{p.stars !== null && p.stars !== undefined ? '★ ' + p.stars + ' STARS' : 'VIEW SOURCE'}</span><span>{p.updatedAt ? 'UPDATED ' + formatUpdated(p.updatedAt) : 'VIEW REPOSITORY'} ↗</span></footer></motion.a>)}</AnimatePresence></motion.div>
+        <div className="projects">{visibleProjects.map((p,i)=><a className="project" key={p.id} href={p.url} target="_blank" rel="noreferrer"><div className="project-top"><span>{String(i+1).padStart(2,'0')} / {p.language || 'PROJECT'}</span><b>↗</b></div><label>{categoryFor(p)}</label><h3>{p.title}</h3><p>{p.description}</p><footer><span>{p.stars !== null && p.stars !== undefined ? '★ ' + p.stars + ' STARS' : 'VIEW SOURCE'}</span><span>{p.updatedAt ? 'UPDATED ' + formatUpdated(p.updatedAt) : 'VIEW REPOSITORY'} ↗</span></footer></a>)}</div>
         <a className="all-link" href="https://github.com/pranav1237" target="_blank" rel="noreferrer">ALL REPOSITORIES ↗</a>
       </Reveal>
 
