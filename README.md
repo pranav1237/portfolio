@@ -156,3 +156,5 @@ Then add your Vercel URL to Firebase Console:
 - Store OAuth client secrets and session encryption secrets only in Vercel environment variables. Never commit real credentials.
 
 **Deployment note:** Vercel's verified-commits protection must remain enabled. The repository changes must be merged as a GitHub-verified commit before the updated browser headers can become active on the production domain.
+
+Dependency lockfile is synchronized with the patched Vite 6.4.6 toolchain and is checked by CI.
