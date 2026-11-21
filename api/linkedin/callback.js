@@ -1,5 +1,4 @@
-import crypto from 'node:crypto';
-import { clearSessionCookie, readCookie, sealSession, sessionCookie } from './_session.js';
+import { clearSessionCookie, readCookie, sealSession, sessionCookie } from '../../lib/linkedin-session.js';
 
 function redirectError(res, reason) {
   res.setHeader('Set-Cookie', clearSessionCookie());
@@ -43,6 +42,10 @@ export default async function handler(req, res) {
     });
     if (!profileResponse.ok) return redirectError(res, 'profile_fetch_failed');
     const profile = await profileResponse.json();
+    const ownerEmail = (process.env.LINKEDIN_OWNER_EMAIL || '').trim().toLowerCase();
+    if (!ownerEmail || !profile.email || profile.email.trim().toLowerCase() !== ownerEmail) {
+      return redirectError(res, 'wrong_linked_account');
+    }
     const expiresIn = Math.max(60, Number(tokenData.expires_in || 5184000));
     const cookie = sealSession({
       accessToken: tokenData.access_token,
