@@ -1,4 +1,4 @@
-import { clearSessionCookie, sendJson } from './_session.js';
+import { clearSessionCookie, sendJson } from '../../lib/linkedin-session.js';
 
 export default function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end('Method not allowed');
