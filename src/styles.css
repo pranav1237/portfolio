@@ -180,3 +180,18 @@ section{scroll-margin-top:100px}
 @media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
   .ticker { animation-duration: 70s; }
 }
+
+/* Reduced-motion users should not get hover-driven movement. */
+@media (prefers-reduced-motion: reduce) {
+  .primary:hover,
+  .secondary:hover,
+  .portrait:hover img,
+  .skills span:hover { transform: none; }
+  .role:hover { padding-left: 8px; }
+}
+@media (max-width: 800px) and (prefers-reduced-motion: reduce) {
+  .role:hover { padding-left: 4px; }
+}
+@media (max-width: 480px) and (prefers-reduced-motion: reduce) {
+  .role:hover { padding-left: 0; }
+}
