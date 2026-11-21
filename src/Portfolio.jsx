@@ -66,47 +66,11 @@ function Reveal({ children, className = '', id }) {
 }
 
 function LinkedInConnection() {
-  const [connection, setConnection] = useState({ loading: true, connected: false, profile: null });
-  const [busy, setBusy] = useState(false);
-
-  const refresh = async () => {
-    try {
-      const response = await fetch('/api/linkedin/profile', { credentials: 'same-origin' });
-      const data = await response.json();
-      setConnection({ loading: false, connected: Boolean(data.connected), profile: data.profile || null });
-    } catch {
-      setConnection({ loading: false, connected: false, profile: null });
-    }
-  };
-
-  useEffect(() => {
-    refresh();
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('linkedin')) {
-      params.delete('linkedin');
-      params.delete('reason');
-      const query = params.toString();
-      window.history.replaceState({}, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
-    }
-  }, []);
-
-  const disconnect = async () => {
-    setBusy(true);
-    try {
-      await fetch('/api/linkedin/disconnect', { method: 'POST', credentials: 'same-origin' });
-      await refresh();
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return <div className="linkedin-card">
-    <div><span className="eyebrow-mini">LINKEDIN / PROFILE CONNECTION</span><h3>{connection.connected ? 'LinkedIn connected.' : 'Connect your LinkedIn.'}</h3>
-      <p>{connection.connected ? `Authenticated as ${connection.profile?.name || 'your LinkedIn account'}. Basic profile data is available to this browser session.` : 'Securely connect your account to verify your basic profile details. This does not grant access to your posts or employment history.'}</p>
+    <div><span className="eyebrow-mini">LINKEDIN / PUBLIC PROFILE</span><h3>Find me on LinkedIn.</h3>
+      <p>Visit my LinkedIn profile to see my professional background, experience and updates.</p>
+      <a className="linkedin-action" href="https://www.linkedin.com/in/pranav-mahajan-673283323/" target="_blank" rel="noopener noreferrer">VIEW LINKEDIN PROFILE ↗</a>
     </div>
-    {connection.connected
-      ? <button className="linkedin-action" disabled={busy} onClick={disconnect}>{busy ? 'DISCONNECTING…' : 'DISCONNECT'}</button>
-      : <a className="linkedin-action" href="/api/linkedin/login">{connection.loading ? 'CHECKING…' : 'CONNECT LINKEDIN ↗'}</a>}
   </div>;
 }
 
@@ -188,7 +152,7 @@ export default function Portfolio() {
         {certificates.length ? <div className="certificate-grid">{certificates.map((certificate,i)=><article className={`certificate${i === 2 ? " certificate-featured" : ""}`} key={certificate.id || certificate.name}><span>{String(i+1).padStart(2, "0")} / {certificate.category || 'CERTIFICATE'}</span><h3>{certificate.name}</h3><p>{certificate.issuer} · {certificate.date}</p>{certificate.credentialUrl && <a href={certificate.credentialUrl} target="_blank" rel="noreferrer">VERIFY CREDENTIAL ↗</a>}{certificate.image && <a href={certificate.image} target="_blank" rel="noreferrer">VIEW CERTIFICATE ↗</a>}</article>)}</div> : <div className="certificate-empty"><span>LEARNING & CREDENTIALS</span><h3>More certificates on the way.</h3><p>These five certificate titles are listed on your LinkedIn profile. Issuers, dates and verification links were not included in the profile text you shared, so they are intentionally left unverified.</p></div>}
       </Reveal>
 
-      <Reveal id="contact" className="contact"><div><span>07 / CONTACT</span><h2>Let’s make<br/><em>something matter.</em></h2><p>Open to internships and project opportunities across software engineering, AI/ML and data analytics.</p></div><div className="contact-links"><a href="mailto:pranavmahajan.4122005@gmail.com">EMAIL ME <span>↗</span></a><a href="https://www.linkedin.com/in/pranavmahajan-673283323" target="_blank" rel="noreferrer">LINKEDIN <span>↗</span></a><a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a><a href="/Pranav_Mahajan_Resume.docx">RESUME <span>↗</span></a></div></Reveal>
+      <Reveal id="contact" className="contact"><div><span>07 / CONTACT</span><h2>Let’s make<br/><em>something matter.</em></h2><p>Open to internships and project opportunities across software engineering, AI/ML and data analytics.</p></div><div className="contact-links"><a href="mailto:pranavmahajan.4122005@gmail.com">EMAIL ME <span>↗</span></a><a href="https://www.linkedin.com/in/pranav-mahajan-673283323/" target="_blank" rel="noreferrer">LINKEDIN <span>↗</span></a><a href="https://github.com/pranav1237" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a><a href="/Pranav_Mahajan_Resume.docx">RESUME <span>↗</span></a></div></Reveal>
     </main>
     <footer className="site-footer"><span>© {new Date().getFullYear()} PRANAV MAHAJAN</span><a href="#top">BACK TO TOP ↑</a></footer>
   </div>;
