@@ -194,3 +194,10 @@ section{scroll-margin-top:100px}
     visibility: visible !important;
   }
 }
+
+
+/* Content is static-first: rendering never depends on scroll observers or animation JS. */
+.progress { display: none; }
+@media (max-width: 800px) {
+  .hero-copy, .portrait, .role, .project, main > section { opacity: 1; visibility: visible; transform: none; }
+}
