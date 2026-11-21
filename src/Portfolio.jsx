@@ -24,6 +24,8 @@ const projects = [
   ['Movie Recommendation System','movie-recommendation-system','RECOMMENDER','A personalized movie recommendation workflow.']
 ];
 const filters = ['ALL','AI','ML','FULL STACK','RECOMMENDER'];
+const categoryFor = repo => { const words = [repo.language, ...(repo.topics || []), repo.name].join(' ').toLowerCase(); if (/agent|llm|langchain|ai/.test(words)) return 'AI'; if (/machine|learning|model|cnn|classification|fraud|data science/.test(words)) return 'ML'; if (/recommend/.test(words)) return 'RECOMMENDER'; if (/react|javascript|typescript|web|marketplace|full.?stack/.test(words)) return 'FULL STACK'; return (repo.language || 'SOFTWARE').toUpperCase(); };
+const formatUpdated = value => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 function Header({ light, setLight }) {
   const [open, setOpen] = useState(false);
@@ -94,7 +96,31 @@ export default function Portfolio() {
   const scale = useSpring(scrollYProgress, { stiffness: 140, damping: 28 });
   const [filter, setFilter] = useState('ALL');
   const [light, setLight] = useState(false);
-  const visibleProjects = projects.filter(p => filter === 'ALL' || (filter === 'AI' ? p[2].includes('AI') : filter === 'ML' ? p[2].includes('ML') || p[2].includes('VISION') : p[2] === filter));
+  const [liveProjects, setLiveProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState(false);
+  const [projectsUpdatedAt, setProjectsUpdatedAt] = useState(null);
+  const syncProjects = async () => {
+    try {
+      const response = await fetch('/api/github/repos', { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('GitHub sync unavailable');
+      const data = await response.json();
+      setLiveProjects(Array.isArray(data.items) ? data.items : []);
+      setProjectsUpdatedAt(data.updatedAt || new Date().toISOString());
+      setProjectsError(false);
+    } catch {
+      setProjectsError(true);
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
+  useEffect(() => {
+    syncProjects();
+    const refresh = window.setInterval(syncProjects, 5 * 60 * 1000);
+    return () => window.clearInterval(refresh);
+  }, []);
+  const projectItems = liveProjects.length ? liveProjects : projects.map(p => ({ id: p[1], title: p[0], name: p[1], language: p[2], topics: [p[2].toLowerCase()], description: p[3], url: 'https://github.com/pranav1237/' + p[1], stars: null, forks: null, updatedAt: null }));
+  const visibleProjects = projectItems.filter(p => filter === 'ALL' || categoryFor(p) === filter);
 
   return <div className={light ? 'page light-theme' : 'page'} id="top">
     <motion.div className="progress" style={{ scaleX: scale }} />
@@ -127,9 +153,11 @@ export default function Portfolio() {
 
       <Reveal id="projects" className="section">
         <header><span>03 / SELECTED WORK</span><h2>Proof over<br/><em>promises.</em></h2><p>A selection of machine learning, AI, recommendation and full-stack projects.</p></header>
-        <div className="filters" role="group" aria-label="Filter projects">{filters.map(x=><button aria-pressed={filter===x} className={filter===x?'active':''} onClick={()=>setFilter(x)} key={x}>{x}</button>)}</div>
-        <div className="project-count">{String(visibleProjects.length).padStart(2,'0')} PROJECTS / {filter}</div>
-        <motion.div layout className="projects"><AnimatePresence mode="popLayout">{visibleProjects.map((p,i)=><motion.a layout initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .25 }} whileHover={{ y: -5 }} className="project" key={p[0]} href={'https://github.com/pranav1237/'+p[1]} target="_blank" rel="noreferrer"><div className="project-top"><span>0{i+1} / PROJECT</span><b>↗</b></div><label>{p[2]}</label><h3>{p[0]}</h3><p>{p[3]}</p><footer>VIEW REPOSITORY <span>↗</span></footer></motion.a>)}</AnimatePresence></motion.div>
+        <div className="project-toolbar"><div className="filters" role="group" aria-label="Filter projects">{filters.map(x=><button aria-pressed={filter===x} className={filter===x?'active':''} onClick={()=>setFilter(x)} key={x}>{x}</button>)}</div><button className="sync-button" onClick={syncProjects} disabled={projectsLoading}>{projectsLoading ? 'SYNCING…' : '↻ REFRESH'}</button></div>
+        <div className="project-count">{String(visibleProjects.length).padStart(2,'0')} PROJECTS / {liveProjects.length ? 'LIVE FROM GITHUB' : 'FEATURED PROJECTS'}{projectsUpdatedAt && <span> · SYNCED {formatUpdated(projectsUpdatedAt)}</span>}</div>
+        {projectsError && <p className="sync-note">Live GitHub sync is temporarily unavailable. Showing the featured project list instead.</p>}
+        {projectsLoading && !liveProjects.length && <p className="sync-note">Connecting to GitHub and loading your latest repositories…</p>}
+        <motion.div layout className="projects"><AnimatePresence mode="popLayout">{visibleProjects.map((p,i)=><motion.a layout initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .25 }} whileHover={{ y: -5 }} className="project" key={p.id} href={p.url} target="_blank" rel="noreferrer"><div className="project-top"><span>{String(i+1).padStart(2,'0')} / {p.language || 'PROJECT'}</span><b>↗</b></div><label>{categoryFor(p)}</label><h3>{p.title}</h3><p>{p.description}</p><footer><span>{p.stars !== null && p.stars !== undefined ? '★ ' + p.stars + ' STARS' : 'VIEW SOURCE'}</span><span>{p.updatedAt ? 'UPDATED ' + formatUpdated(p.updatedAt) : 'VIEW REPOSITORY'} ↗</span></footer></motion.a>)}</AnimatePresence></motion.div>
         <a className="all-link" href="https://github.com/pranav1237" target="_blank" rel="noreferrer">ALL REPOSITORIES ↗</a>
       </Reveal>
 
