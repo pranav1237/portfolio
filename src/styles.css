@@ -180,3 +180,17 @@ section{scroll-margin-top:100px}
 @media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
   .ticker { animation-duration: 70s; }
 }
+
+
+/* Mobile rendering safety: never leave content hidden if scroll observers fail. */
+@media (max-width: 800px) {
+  .page main > section,
+  .page .hero-copy,
+  .page .portrait,
+  .page .role,
+  .page .project {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+}
