@@ -119,3 +119,13 @@ section{scroll-margin-top:100px}
 .certificate h3{font-size:22px;margin:20px 0 8px}
 .certificate p{font-size:11px;color:var(--muted)}
 @media(max-width:600px){.linkedin-card{align-items:flex-start;flex-direction:column}.certificate-grid{grid-template-columns:1fr}}
+
+
+.project-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.sync-button{padding:9px 12px;border:1px solid var(--line);border-radius:30px;background:transparent;color:var(--muted);font:9px 'DM Mono',monospace;letter-spacing:.08em;cursor:pointer;transition:all .2s}
+.sync-button:hover:not(:disabled){background:var(--text);color:var(--bg);border-color:var(--text)}
+.sync-button:disabled{opacity:.55;cursor:wait}
+.project-count span{margin-left:8px;color:var(--muted)}
+.sync-note{color:var(--muted);font:10px 'DM Mono',monospace;line-height:1.7;margin:12px 0}
+.project footer{gap:12px;flex-wrap:wrap}
+@media(max-width:480px){.project-toolbar{align-items:flex-start}.sync-button{margin-bottom:8px}}
