@@ -10,6 +10,7 @@ Add these under Project Settings → Environment Variables for Production (and P
 - `LINKEDIN_CLIENT_SECRET`: Primary Client Secret from the LinkedIn Developer app.
 - `LINKEDIN_REDIRECT_URI`: `https://pranavmahajanportfolio.vercel.app/api/linkedin/callback`
 - `LINKEDIN_SESSION_SECRET`: a unique random secret of at least 32 characters. Generate one locally with `openssl rand -hex 32`.
+- `LINKEDIN_OWNER_EMAIL`: the primary email returned by your LinkedIn OpenID Connect account; the callback rejects other LinkedIn accounts.
 
 Never put the Client Secret or session secret in frontend code, GitHub, chat, or a committed .env file.
 
