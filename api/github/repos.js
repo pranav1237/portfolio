@@ -2,9 +2,17 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
   try {
-    const response = await fetch('https://api.github.com/users/pranav1237/repos?per_page=100&sort=updated&type=owner', {
-      headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let response;
+    try {
+      response = await fetch('https://api.github.com/users/pranav1237/repos?per_page=100&sort=updated&type=owner', {
+        signal: controller.signal,
+        headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) throw new Error('GitHub API returned ' + response.status);
     const repositories = await response.json();
     const items = repositories
