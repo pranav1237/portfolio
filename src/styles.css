@@ -131,3 +131,52 @@ section{scroll-margin-top:100px}
 .sync-note{color:var(--muted);font:10px 'DM Mono',monospace;line-height:1.7;margin:12px 0}
 .project footer{gap:12px;flex-wrap:wrap}
 @media(max-width:480px){.project-toolbar{align-items:flex-start}.sync-button{margin-bottom:8px}}
+
+
+/* Compact mobile rhythm: prevent oversized blank intervals while scrolling */
+@media (max-width: 800px) {
+  .hero { min-height: 0; padding: 28px 0 42px; gap: 22px; }
+  .portrait { height: min(54svh, 500px); min-height: 300px; }
+  .intro { padding: 54px 0; gap: 16px; }
+  .section { padding: 58px 0; }
+  .section header { margin-bottom: 26px; }
+  .role { padding: 18px 4px; gap: 10px; }
+  .role h3 { font-size: 18px; margin: 7px 0; line-height: 1.35; }
+  .role p { line-height: 1.65; }
+  .tags { margin-top: 9px; gap: 6px; }
+  .tags span { padding: 5px 8px; }
+  .project { min-height: 0; padding: 19px; }
+  .project h3 { margin: 10px 0 6px; }
+  .project p { margin: 8px 0 14px; }
+  .skills { gap: 7px; }
+  .skills span { padding: 9px 11px; }
+  .about > div { padding: 18px; }
+  .contact { padding: 54px 0; gap: 22px; }
+  .site-footer { padding-top: 18px; padding-bottom: 18px; }
+}
+@media (max-width: 480px) {
+  main { padding-left: 16px; padding-right: 16px; }
+  .hero { padding-top: 20px; padding-bottom: 34px; gap: 18px; }
+  .portrait { height: 48svh; min-height: 270px; max-height: 390px; }
+  .intro { padding: 44px 0; }
+  .section { padding: 48px 0; }
+  .section header { margin-bottom: 20px; }
+  .section h2 { font-size: clamp(40px, 11vw, 48px); }
+  .role { grid-template-columns: 22px minmax(0, 1fr) 12px; padding: 15px 0; gap: 8px; }
+  .role > div > label { line-height: 1.8; }
+  .role-status { margin: 5px 0 0; }
+  .role h3 { font-size: 16px; }
+  .role p { font-size: 11px; }
+  .project { padding: 16px; }
+  .project h3 { font-size: 21px; }
+  .certificate { padding: 19px; }
+  .certificate h3 { font-size: 19px; margin: 14px 0 7px; }
+  .certificate-featured { grid-column: auto; }
+  .linkedin-card { margin-top: 20px; padding: 16px; }
+  .contact { padding: 46px 0; }
+  .contact-links { gap: 7px; }
+}
+/* Keep motion transforms from creating apparent spacing on small screens. */
+@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
+  .ticker { animation-duration: 70s; }
+}
