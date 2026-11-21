@@ -146,3 +146,13 @@ Then add your Vercel URL to Firebase Console:
 ---
 
 **Happy coding! 🎉**
+
+## Security
+
+- Browser responses are configured with Content Security Policy, anti-framing, MIME-sniffing, referrer, and permissions headers in `vercel.json`.
+- Vercel Firewall is enabled with bot protection and a per-IP API rate limit of 120 requests per minute.
+- GitHub Actions runs a dependency vulnerability audit and production build; CodeQL analyzes JavaScript/TypeScript.
+- LinkedIn OAuth uses a random state value and encrypted, HttpOnly, Secure, SameSite session cookies.
+- Store OAuth client secrets and session encryption secrets only in Vercel environment variables. Never commit real credentials.
+
+**Deployment note:** Vercel's verified-commits protection must remain enabled. The repository changes must be merged as a GitHub-verified commit before the updated browser headers can become active on the production domain.
