@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion';
 import './styles.css';
 
-const portrait = '/WhatsApp%20Image%202026-11-21%20at%2012.17.19.jpeg';
+const portrait = '/ezmaker_cabc36d0da9eb2aa3bc5eabb1113cfd1.png';
 const skills = ['Python','SQL','Java','C++','JavaScript','React','Node.js','Pandas','NumPy','Scikit-learn','Machine Learning','Agentic AI','LangChain','LangGraph','CrewAI','Power BI','Tableau','Excel','Git'];
 const roles = [
   { title: 'AI Developer Intern', company: 'NEXVORA', start: '2026-11', end: null, description: 'Working on applied AI development as an intern, contributing to practical product and engineering work.', tags: ['AI','Python','Development'] },
